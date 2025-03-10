@@ -9,6 +9,7 @@ export async function sendVerificationCode(verificationCode, email, res) {
       subject: "Account Verification Code",
       message,
     });
+    if (res.headersSent) return; // <-- Add this check
     res.status(200).json({
       success: true,
       message: `Verification Code sent successfully !`,

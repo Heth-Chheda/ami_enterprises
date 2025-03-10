@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
 // ------------------ Address Schema ---------------------
 /**
@@ -164,6 +165,12 @@ userSchema.methods.generateVerificationCode = function () {
   this.verificationCodeExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes expiry of the verification code
 
   return verficationCode;
+};
+
+userSchema.methods.generateToken = function () {
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: process.env.JWT_EXPIRY,
+  });
 };
 
 const User = mongoose.model("User", userSchema);
