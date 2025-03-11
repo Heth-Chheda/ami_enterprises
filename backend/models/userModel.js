@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 // ------------------ Address Schema ---------------------
 /**
@@ -173,5 +174,18 @@ userSchema.methods.generateToken = function () {
   });
 };
 
+userSchema.methods.getResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(20).toString("hex");
+  console.log(`Reset Token from userModel : ${resetToken}`);
+
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.resetPasswordExpiry = Date.now() + 15 * 60 * 1000;
+
+  return resetToken;
+};
 const User = mongoose.model("User", userSchema);
 export default User;

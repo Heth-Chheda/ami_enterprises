@@ -6,6 +6,8 @@ import crypto from "crypto";
 import { catchAsyncErrorsMiddleware } from "../middlewares/catchAsyncErrorsMiddleware.js";
 import { sendVerificationCode } from "../utils/sendVerificationCode.js";
 import { sendToken } from "../utils/sendToken.js";
+import { sendEmail } from "../utils/sendEmail.js";
+import { generateForgotPasswordEmailTemplate } from "../utils/emailTemplate.js";
 
 // -------------------------Register API---------------------------------------
 export const register = catchAsyncErrorsMiddleware(async (req, res, next) => {
@@ -192,6 +194,7 @@ export const logout = catchAsyncErrorsMiddleware(async (req, res, next) => {
 });
 
 // ---------------------GET USER API--------------------------------------------
+// This api only works if the user is logged in, otherwise it will give errors
 export const getUser = catchAsyncErrorsMiddleware(async (req, res, next) => {
   const user = req.user;
   res.status(200).json({
@@ -199,3 +202,135 @@ export const getUser = catchAsyncErrorsMiddleware(async (req, res, next) => {
     user,
   });
 });
+
+//---------------------FORGOT PASSWORD API--------------------------------------
+export const forgotPassword = catchAsyncErrorsMiddleware(
+  async (req, res, next) => {
+    if (!req.body.email) {
+      return next(new ErrorHandler("Please give the email.", 400));
+    }
+    const user = await User.findOne({
+      email: req.body.email,
+      accountVerified: true,
+    });
+    if (!user) {
+      return next(new ErrorHandler("User not found with given email.", 400));
+    }
+
+    const resetToken = await user.getResetPasswordToken();
+    console.log(`Reset Token from forgot password: ${resetToken}`);
+
+    await user.save({ validateBeforeSave: false });
+
+    const resetPasswordUrl = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
+
+    const message = generateForgotPasswordEmailTemplate(resetPasswordUrl);
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Ami Enterprises Password Reset",
+        message,
+      });
+      res.status(200).json({
+        success: true,
+        message: `Email sent to: ${user.email} successfully.`,
+      });
+    } catch (error) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpiry = undefined;
+      await user.save({ validateBeforeSave: false });
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+// ------------------------RESET PASSWORD API-----------------------------------
+export const resetPassword = catchAsyncErrorsMiddleware(
+  async (req, res, next) => {
+    console.log(`Request Params : ${JSON.stringify(req.params)}`);
+    const { token } = req.params;
+
+    const resetPasswordToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    if (!req.body.password || !req.body.confirmPassword) {
+      return next(new ErrorHandler("Please enter all the fields.", 400));
+    }
+
+    console.log(`Reset Password Token: ${resetPasswordToken}`);
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return next(
+        new ErrorHandler("Reset Password Token invalid or expired.", 400)
+      );
+    }
+
+    if (req.body.password !== req.body.confirmPassword) {
+      return next(new ErrorHandler("Passwords do not match.", 400));
+    }
+
+    if (req.body.password.length < 8 || req.body.password.length > 16) {
+      return next(
+        new ErrorHandler("Password must be between 8 to 16 characters", 400)
+      );
+    }
+
+    // ✅ Fix bcrypt hashing
+    user.password = await bcrypt.hash(req.body.password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiry = undefined;
+
+    await user.save({ validateBeforeSave: false });
+
+    sendToken(user, 200, "Password reset successfully.", res);
+  }
+);
+
+//--------------------UPDATE PASSWORD API---------------------------------------
+export const updatePassword = catchAsyncErrorsMiddleware(
+  async (req, res, next) => {
+    const user = await User.findById(req.user._id).select("+password");
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      return next(new ErrorHandler("Please enter all fields.", 400));
+    }
+
+    const isPasswordMatched = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isPasswordMatched) {
+      return next(new ErrorHandler("Current Password does not match.", 400));
+    }
+
+    if (newPassword.length < 8 || newPassword > 16) {
+      return next(
+        new ErrorHandler("Password must be between 8 to 16 characters.", 400)
+      );
+    }
+
+    if (currentPassword == newPassword) {
+      return next(new ErrorHandler("Cannot use this Password.", 400));
+    }
+
+    if (newPassword != confirmNewPassword) {
+      return next(new ErrorHandler("Passwords do not match.", 400));
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+
+    await user.save();
+
+    sendToken(user, 200, "Password updated successfully.", res);
+  }
+);
