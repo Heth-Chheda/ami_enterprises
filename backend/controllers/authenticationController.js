@@ -218,7 +218,7 @@ export const forgotPassword = catchAsyncErrorsMiddleware(
     }
 
     const resetToken = await user.getResetPasswordToken();
-    console.log(`Reset Token from forgot password: ${resetToken}`);
+    // console.log(`Reset Token from forgot password: ${resetToken}`);
 
     await user.save({ validateBeforeSave: false });
 
@@ -248,7 +248,7 @@ export const forgotPassword = catchAsyncErrorsMiddleware(
 // ------------------------RESET PASSWORD API-----------------------------------
 export const resetPassword = catchAsyncErrorsMiddleware(
   async (req, res, next) => {
-    console.log(`Request Params : ${JSON.stringify(req.params)}`);
+    // console.log(`Request Params : ${JSON.stringify(req.params)}`);
     const { token } = req.params;
 
     const resetPasswordToken = crypto
@@ -260,7 +260,7 @@ export const resetPassword = catchAsyncErrorsMiddleware(
       return next(new ErrorHandler("Please enter all the fields.", 400));
     }
 
-    console.log(`Reset Password Token: ${resetPasswordToken}`);
+    // console.log(`Reset Password Token: ${resetPasswordToken}`);
 
     const user = await User.findOne({
       resetPasswordToken,
@@ -331,6 +331,104 @@ export const updatePassword = catchAsyncErrorsMiddleware(
 
     await user.save();
 
-    sendToken(user, 200, "Password updated successfully.", res);
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully !",
+    });
+  }
+);
+
+// ------------------------------------------------------------------------------
+// ADMIN PART ------------------------------------------------------------------------------
+
+//---------------------- GET_ALL_USERS----------------------------------------
+export const getAllUsers = catchAsyncErrorsMiddleware(
+  async (req, res, next) => {
+    const users = await User.find();
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  }
+);
+
+// ------------------------- GET_USER_BY_NAME_OR_EMAIL-------------------------
+export const getUserByUsernameOrEmail = catchAsyncErrorsMiddleware(
+  async (req, res, next) => {
+    const { search } = req.query;
+
+    if (!search) {
+      return next(
+        new ErrorHandler("Please provide with a email or name.", 400)
+      );
+    }
+
+    const user = await User.findOne({
+      $or: [{ name: search }, { email: search }],
+    });
+
+    if (!user) {
+      return next(new ErrorHandler("User not found.", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  }
+);
+
+// ---------------------------UPDATE THE USER BY EMAIL -------------------------
+
+export const updateUserByEmail = catchAsyncErrorsMiddleware(
+  async (req, res, next) => {
+    const { email } = req.params;
+
+    const updateUserDetials = req.body;
+
+    if (!updateUserDetials || Object.keys(updateUserDetials).length === 0) {
+      return next(new ErrorHandler("Nothing to update?", 400));
+    }
+
+    if (updateUserDetials.password) {
+      return next(new ErrorHandler("Cannot update the password.", 400));
+    }
+
+    const user = await User.findOneAndUpdate({ email }, updateUserDetials, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!user) {
+      return next(new ErrorHandler("User does not exist.", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully!",
+      user,
+    });
+  }
+);
+
+// --------------------------DELETE USER BY EMAIL -----------------------------
+export const deleteUserByEmail = catchAsyncErrorsMiddleware(
+  async (req, res, next) => {
+    const { email } = req.params;
+
+    if (!email) {
+      return next(new ErrorHandler("Select the user to delete.", 400));
+    }
+
+    const user = await User.findOneAndDelete({ email });
+
+    if (!user) {
+      return next(new ErrorHandler("User not found.", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `User with ${email} deleted successfully.`,
+    });
   }
 );

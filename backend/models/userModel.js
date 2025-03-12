@@ -176,7 +176,7 @@ userSchema.methods.generateToken = function () {
 
 userSchema.methods.getResetPasswordToken = function () {
   const resetToken = crypto.randomBytes(20).toString("hex");
-  console.log(`Reset Token from userModel : ${resetToken}`);
+  // console.log(`Reset Token from userModel : ${resetToken}`);
 
   this.resetPasswordToken = crypto
     .createHash("sha256")
