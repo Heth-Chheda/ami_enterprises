@@ -25,12 +25,12 @@ app.use(
     credentials: true,
   })
 );
-
+/// ----------------------- Authentication Routes --------------------------
 app.use("/api/v1/authentication", authenticationRoutes);
 
 // -------------------Connection to the Database -----------------------
 connectionToDatabase();
 
-// ------------------- Error Middleware -------------------
+// ------------------- Error Middleware ---------------------------------
 // Note : -- Error Middleware should be at the end of all the middlewares
 app.use(errorMiddleware);
