@@ -1,70 +1,53 @@
-import Sidebar from "../layout/Sidebar";
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import UserDashboard from "@/components/ui/UserDashboard";
-import AdminDashboard from "@/components/ui/AdminDashboard";
-import { useSidebar } from "../context/sidebarContext";
+import React, { useEffect, useState } from "react";
+import FeaturedProducts from "@/components/ui/Home/FeaturedProducts";
+import Categories from "@/components/ui/Home/Categories";
+import ServicesSection from "@/components/ui/Home/ServiceSection";
+import HeroSection from "@/components/ui/Home/HeroSection";
+import AnimatedBanner from "@/components/ui/Home/AnimatedBanner";
+
+const ads = [
+  "Get 20% off on your first order!",
+  "Free shipping on orders over $50!",
+  "New arrivals now available – Shop Now!",
+];
 
 const Home = () => {
-  const { isSidebarOpen, setIsSidebarOpen } = useSidebar(); // Use context state
-  const [selectedComponent, setSelectedComponent] = useState("Dashboard");
+  const [currentAd, setCurrentAd] = useState(0);
 
-  const { user, isAuthenticated } = useSelector(
-    (state) => state.authentication
-  );
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentAd((prev) => (prev + 1) % ads.length);
+    }, 3000);
 
-  // Redirect if not authenticated
-  // if (!isAuthenticated) {
-  //   return <Navigate to={"/login"} />;
-  // }
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <>
-      <div className="relative md:pl-64 flex min-h-screen bg-gray-100">
-        {/* Sidebar */}
-        {isAuthenticated && (
-          <Sidebar
-            isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={setIsSidebarOpen}
-            setSelectedComponent={setSelectedComponent}
-          />
-        )}
+    <div className="flex flex-col min-h-screen bg-gray-100 items-center mb-7">
+      {/* Hero Section */}
+      <HeroSection />
 
-        {/* Component Switching */}
-        {(() => {
-          switch (selectedComponent) {
-            case "Dashboard":
-              return user?.user_role === "customer" ? (
-                <UserDashboard />
-              ) : (
-                <AdminDashboard />
-              );
+      {/* Animated Banner Section */}
+      <AnimatedBanner />
 
-            case "Products":
-              return <ProductManagement />;
+      {/* Categories Section */}
+      <section className="w-full max-w-7xl mx-auto mt-8 px-4">
+        <h2 className="text-3xl font-semibold mb-4 text-center text-gray-700">
+          Shop by Categories
+        </h2>
+        <Categories />
+      </section>
 
-            case "Catalog":
-              if (user?.user_role === "admin") {
-                return <Catalog />;
-              }
-              break;
-
-            case "Users":
-              if (user?.user_role === "admin") {
-                return <UsersHai />;
-              }
-              break;
-
-            default:
-              return user?.user_role === "customer" ? (
-                <UserDashboard />
-              ) : (
-                <AdminDashboard />
-              );
-          }
-        })()}
-      </div>
-    </>
+      {/* Featured Products Section */}
+      <section className="w-full max-w-7xl mx-auto mt-8 px-4">
+        <h2 className="text-3xl font-semibold mb-4 text-gray-700 text-center">
+          Featured Products
+        </h2>
+        <FeaturedProducts />
+      </section>
+      {/* ✅ Services Section */}
+      <ServicesSection />
+    </div>
   );
 };
 

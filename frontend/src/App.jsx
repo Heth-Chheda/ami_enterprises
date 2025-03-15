@@ -2,7 +2,6 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { Provider } from "react-redux"; // Redux Provider
-import { SidebarProvider } from "./context/sidebarContext";
 import { store } from "./store/store.js";
 
 // Pages
@@ -13,32 +12,29 @@ import ForgotPassword from "./pages/ForgotPassword";
 import OTP from "./pages/OTP";
 import ResetPassword from "./pages/ResetPassword";
 import Navbar from "./components/navbar";
+import Footer from "./components/footer";
 
 function App() {
   return (
     <Provider store={store}>
       {" "}
       {/* Wrap Redux */}
-      <SidebarProvider>
-        {" "}
-        {/* Wrap Sidebar Context */}
-        <Router>
-          {/* Navbar available across all routes */}
-          <Navbar />
+      <Router>
+        {/* Navbar available across all routes */}
+        <Navbar />
 
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/password/forgot" element={<ForgotPassword />} />
-            <Route path="/otp-verification/:email" element={<OTP />} />
-            <Route path="/password/reset/:token" element={<ResetPassword />} />
-          </Routes>
-
-          <ToastContainer theme="dark" />
-        </Router>
-      </SidebarProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/password/forgot" element={<ForgotPassword />} />
+          <Route path="/otp-verification/:email" element={<OTP />} />
+          <Route path="/password/reset/:token" element={<ResetPassword />} />
+        </Routes>
+        <ToastContainer theme="dark" />
+        <Footer />
+      </Router>
     </Provider>
   );
 }

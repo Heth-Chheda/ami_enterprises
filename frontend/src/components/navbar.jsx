@@ -1,14 +1,29 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import { Menu, X, ShoppingCart } from "lucide-react";
-import { useSidebar } from "@/context/sidebarContext";
+import { logout } from "@/store/slices/authenticationSlice";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
-  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const profileImage = "https://i.pravatar.cc/40"; // Sample image
+  {
+    /* Cart Items Variables */
+  }
+  const { cartItems } = useSelector((state) => state.cart);
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
+  const dispatch = useDispatch();
+
+  // ✅ Get isAuthenticated and user from Redux state
+  const { user, isAuthenticated } = useSelector(
+    (state) => state.authentication
+  );
+
+  const profileImage = user?.profileImage || "https://i.pravatar.cc/40"; // Fallback profile image
   const profileRef = useRef(null);
 
   // Close dropdown on click outside
@@ -22,9 +37,21 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout());
+      setIsMenuOpen(false);
+      toast.success("Logged out successfully!");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setIsProfileOpen(false);
+    }
+  }, [isAuthenticated]);
 
   return (
     <nav className="bg-gray-900 shadow-md sticky top-0 z-[100]">
@@ -56,9 +83,11 @@ const Navbar = () => {
                 className="text-gray-300 hover:text-blue-400 transition duration-300"
                 size={24}
               />
-              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                3
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
             </Link>
 
             {/* Profile */}
@@ -93,8 +122,15 @@ const Navbar = () => {
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700"
+                    disabled={isLoggingOut}
                   >
-                    Logout
+                    {isLoggingOut ? (
+                      <div className="flex items-center gap-2">
+                        <FaSpinner className="animate-spin" /> Logging out...
+                      </div>
+                    ) : (
+                      "Logout"
+                    )}
                   </button>
                 </div>
               </div>
@@ -108,36 +144,40 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Sidebar Toggle for Mobile */}
+          {/* Mobile Icons */}
           <div className="md:hidden flex items-center gap-4">
+            {/* Cart Icon */}
             <Link to="/cart" className="relative">
               <ShoppingCart
                 className="text-gray-300 hover:text-blue-400 transition duration-300"
                 size={24}
               />
-              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                3
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
             </Link>
 
+            {/* Menu Button */}
             <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="text-gray-300 hover:text-blue-400 transition duration-300"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-gray-300 hover:text-blue-400 transition duration-300 cursor-pointer"
             >
-              {isSidebarOpen ? <X size={26} /> : <Menu size={26} />}
+              {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
             </button>
           </div>
         </div>
 
         {/* Mobile Dropdown */}
-        {isSidebarOpen && (
+        {isMenuOpen && (
           <div className="md:hidden absolute top-16 left-0 w-full bg-gray-800 shadow-md transition-all duration-300">
             {["Home", "Products", "About", "Contact"].map((label) => (
               <Link
                 key={label}
                 to={`/${label.toLowerCase()}`}
-                className="block text-gray-300 hover:text-blue-400 py-2 px-6 border-b border-gray-700 gap-3"
-                onClick={() => setIsSidebarOpen(false)}
+                className="block text-gray-300 hover:text-blue-400 py-3 px-6 border-b border-gray-700"
+                onClick={() => setIsMenuOpen(false)}
               >
                 {label}
               </Link>
@@ -145,32 +185,45 @@ const Navbar = () => {
 
             {/* Profile for Mobile */}
             {isAuthenticated ? (
-              <div className="px-6 py-2 flex items-center gap-2">
+              <div className="flex flex-col gap-2 p-4 border-t border-gray-700">
                 <img
                   src={profileImage}
                   alt="Profile"
-                  className="w-8 h-8 rounded-full mr-5"
+                  className="w-12 h-12 rounded-full"
                 />
-                <div className="flex flex-row gap-9">
-                  <Link to="/profile" className="text-gray-300">
-                    Profile
-                  </Link>
-                  <Link to="/orders" className="text-gray-300">
-                    Orders
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="text-gray-300 text-left"
-                  >
-                    Logout
-                  </button>
-                </div>
+                <Link
+                  to="/profile"
+                  className="text-gray-300 hover:text-blue-400 py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                <Link
+                  to="/orders"
+                  className="text-gray-300 hover:text-blue-400 py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Orders
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-300 hover:text-blue-400 py-2 text-left"
+                  disabled={isLoggingOut}
+                >
+                  {isLoggingOut ? (
+                    <div className="flex items-center gap-2">
+                      <FaSpinner className="animate-spin" /> Logging out...
+                    </div>
+                  ) : (
+                    "Logout"
+                  )}
+                </button>
               </div>
             ) : (
               <Link
                 to="/login"
-                className="block text-center bg-blue-600 text-white py-2 rounded-md hover:bg-blue-500 transition duration-300 mx-6 my-2"
-                onClick={() => setIsSidebarOpen(false)}
+                className="block text-center bg-blue-600 text-white py-3 rounded-md hover:bg-blue-500 transition duration-300 m-4"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Login
               </Link>

@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const authenticationSlice = createSlice({
@@ -7,8 +7,8 @@ const authenticationSlice = createSlice({
     loading: false,
     error: null,
     message: null,
-    user: null,
-    isAuthenticated: false,
+    user: JSON.parse(localStorage.getItem("user")) || null,
+    isAuthenticated: !!localStorage.getItem("user"),
   },
   reducers: {
     registrationRequest(state) {
@@ -51,7 +51,8 @@ const authenticationSlice = createSlice({
       (state.loading = false),
         (state.message = action.payload),
         (state.isAuthenticated = false),
-        (state.user = null);
+        (state.user = null),
+        localStorage.removeItem("user");
     },
     logoutFailed(state, action) {
       (state.loading = false),
@@ -165,25 +166,29 @@ export const otpVerification = (email, otp) => async (dispatch) => {
     });
 };
 
-export const login = (data) => async (dispatch) => {
-  dispatch(authenticationSlice.actions.loginRequest());
-  await axios
-    .post("http://localhost:4000/api/v1/authentication/login", data, {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-    .then((res) => {
-      dispatch(authenticationSlice.actions.loginSuccess(res.data));
-      //Fetching the User information if the login is successfull
-    })
-    .catch((error) => {
-      dispatch(
-        authenticationSlice.actions.loginFailed(error.response.data.message)
+export const login = createAsyncThunk(
+  "authentication/login",
+  async (form, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:4000/api/v1/authentication/login",
+        form,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
-    });
-};
+
+      localStorage.setItem("user", JSON.stringify(res.data));
+      return res.data; // ✅ Return data directly for unwrap
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Login failed");
+    }
+  }
+);
+
 export const logout = () => async (dispatch) => {
   dispatch(authenticationSlice.actions.logoutRequest());
   await axios
@@ -193,6 +198,7 @@ export const logout = () => async (dispatch) => {
     .then((res) => {
       dispatch(authenticationSlice.actions.logoutSuccess(res.data.message));
       dispatch(authenticationSlice.actions.resetAuthenticationSlice());
+      localStorage.removeItem("user");
     })
     .catch((error) => {
       dispatch(
@@ -203,20 +209,26 @@ export const logout = () => async (dispatch) => {
 
 export const getUserInformation = () => async (dispatch) => {
   dispatch(authenticationSlice.actions.getUserInformationRequest());
-  await axios
-    .get("http://localhost:4000/api/v1/authentication/get-user", {
-      withCredentials: true,
-    })
-    .then((res) => {
-      dispatch(authenticationSlice.actions.getUserInformationSuccess(res.data));
-    })
-    .catch((error) => {
-      dispatch(
-        authenticationSlice.actions.getUserInformationFailed(
-          error.response.data.message
-        )
-      );
-    });
+  try {
+    const res = await axios.get(
+      "http://localhost:4000/api/v1/authentication/get-user",
+      { withCredentials: true }
+    );
+    dispatch(authenticationSlice.actions.getUserInformationSuccess(res.data));
+
+    // ✅ Save user info to localStorage
+    localStorage.setItem("user", JSON.stringify(res.data));
+
+    // ✅ Return the user data
+    return res.data;
+  } catch (error) {
+    dispatch(
+      authenticationSlice.actions.getUserInformationFailed(
+        error.response?.data?.message || "Failed to get user information"
+      )
+    );
+    throw error;
+  }
 };
 
 export const forgotPassword = (email) => async (dispatch) => {
