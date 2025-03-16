@@ -6,6 +6,7 @@ import { store } from "./store/store.js";
 
 // Pages
 import Home from "./pages/Home";
+import About from "./pages/About";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -31,6 +32,7 @@ function App() {
           <Route path="/password/forgot" element={<ForgotPassword />} />
           <Route path="/otp-verification/:email" element={<OTP />} />
           <Route path="/password/reset/:token" element={<ResetPassword />} />
+          <Route path="/about" element={<About />} />
         </Routes>
         <ToastContainer theme="dark" />
         <Footer />

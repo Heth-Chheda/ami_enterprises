@@ -23,7 +23,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 items-center mb-7">
+    <div className="flex flex-col min-h-screen bg-gray-100 items-center ">
       {/* Hero Section */}
       <HeroSection />
 

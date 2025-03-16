@@ -141,9 +141,11 @@ export const verifyOTP = catchAsyncErrorsMiddleware(async (req, res, next) => {
     user.verificationCode = null;
     user.verificationCodeExpiry = null;
 
+    await user.save();
     return res.status(200).json({
       success: true,
       message: "Registration successful!",
+      user,
     });
   } catch (error) {
     return next(new ErrorHandler("Internal server error.", 500));

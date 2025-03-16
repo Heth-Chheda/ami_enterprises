@@ -39,7 +39,8 @@ const authenticationSlice = createSlice({
       (state.loading = false),
         (state.message = action.payload.message),
         (state.isAuthenticated = true),
-        (state.user = action.payload.user);
+        (state.user = action.payload.user),
+        localStorage.setItem("user", JSON.stringify(action.payload));
     },
     loginFailed(state, action) {
       (state.loading = false), (state.error = action.payload);
@@ -227,7 +228,6 @@ export const getUserInformation = () => async (dispatch) => {
         error.response?.data?.message || "Failed to get user information"
       )
     );
-    throw error;
   }
 };
 

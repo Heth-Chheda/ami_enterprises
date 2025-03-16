@@ -2,13 +2,15 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/store/slices/cartSlice";
-import ProductCard from "@/layout/ProductCard";
+import ProductCardProducts from "@/layout/ProductCardProducts";
+import { toast } from "react-toastify";
 
 const products = [
   {
     id: 1,
     name: "Notebook Set",
-    price: "$12",
+    mrp: "₹100",
+    price: "₹12",
     image:
       "https://images.unsplash.com/photo-1601001435957-74f0958a93fb?q=80&w=400",
     description: "Premium quality notebooks with smooth paper.",
@@ -16,39 +18,44 @@ const products = [
   {
     id: 2,
     name: "Gel Pen Pack",
-    price: "$8",
+    mrp: "₹100",
+    price: "₹8",
     image:
-      "https://images.unsplash.com/photo-1597484660412-4fe5c1f3c9c8?q=80&w=400",
+      "https://images.unsplash.com/photo-1573870796303-a663ab555fc0?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     description: "Smooth writing gel pens in assorted colors.",
   },
   {
     id: 3,
     name: "Highlighter Set",
-    price: "$10",
+    mrp: "₹100",
+    price: "₹10",
     image:
-      "https://images.unsplash.com/photo-1599658880436-c61792e70672?q=80&w=400",
+      "https://images.unsplash.com/photo-1641212443047-d7f35fd5eb16?q=80&w=1442&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     description: "Vibrant highlighters for organizing your notes.",
   },
   {
     id: 4,
     name: "Sticky Notes",
-    price: "$5",
+    mrp: "₹100",
+    price: "₹5",
     image:
-      "https://images.unsplash.com/photo-1600195077908-3e4d1044e41f?q=80&w=400",
+      "https://images.unsplash.com/photo-1512314889357-e157c22f938d?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     description: "Colorful sticky notes for quick reminders.",
   },
   {
     id: 5,
     name: "Pencil Case",
-    price: "$15",
+    mrp: "₹100",
+    price: "₹15",
     image:
-      "https://images.unsplash.com/photo-1621091211060-516b6f1e4e88?q=80&w=400",
+      "https://images.unsplash.com/photo-1661732017125-f425c3e86467?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     description: "Durable and stylish pencil case with compartments.",
   },
   {
     id: 6,
     name: "Mechanical Pencils",
-    price: "$7",
+    mrp: "₹100",
+    price: "₹7",
     image:
       "https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=400",
     description: "Precision mechanical pencils for smooth writing.",
@@ -62,7 +69,9 @@ const FeaturedProducts = () => {
 
   const handleAddToCart = (product) => {
     if (!isAuthenticated) {
-      alert("Please log in to add items to your cart.");
+      navigate("/login");
+      // alert("Please log in to add items to your cart.");
+      toast.warn("Please login first.");
       return;
     }
     dispatch(addToCart(product));
@@ -71,10 +80,11 @@ const FeaturedProducts = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
       {products.map((product) => (
-        <ProductCard
+        <ProductCardProducts
           key={product.id}
           id={product.id}
           name={product.name}
+          mrp={product.mrp}
           price={product.price}
           image={product.image}
           onAddToCart={() => handleAddToCart(product)}

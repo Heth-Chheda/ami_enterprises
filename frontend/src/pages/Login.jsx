@@ -40,8 +40,7 @@ const Login = () => {
       navigate("/");
 
       // ✅ Unwrap and log user info
-      const userInformation = await dispatch(getUserInformation());
-      console.log("User Information:", userInformation);
+      await dispatch(getUserInformation());
     } catch (err) {
       const errorMessage =
         typeof err === "string" ? err : err?.message || "Cannot login!";
@@ -51,9 +50,8 @@ const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const userInformation = dispatch(getUserInformation());
-      navigate("/"); // ✅ Redirect to home page when authenticated
-      console.log("User information : ", userInformation);
+      dispatch(getUserInformation());
+      navigate("/");
     }
   }, [isAuthenticated, navigate]);
   return (
@@ -127,7 +125,7 @@ const Login = () => {
           {/* Login Button */}
           <motion.button
             type="submit"
-            className={`w-full bg-blue-500 text-white py-3 rounded-lg font-semibold shadow-md hover:bg-blue-600 transition-all cursor-pointer flex items-center justify-center ${
+            className={`w-full bg-violet-500 text-white py-3 rounded-lg font-semibold shadow-md hover:bg-violet-600 transition-all cursor-pointer flex items-center justify-center ${
               loading ? "opacity-75 cursor-not-allowed" : ""
             }`}
             whileHover={!loading ? { scale: 1.05 } : {}}
@@ -146,19 +144,25 @@ const Login = () => {
         </form>
 
         {/* Links */}
-        <div className="mt-6 flex flex-col items-center text-sm text-gray-600 space-y-2">
+        <div className="mt-6 flex items-center text-sm text-gray-600">
           <button
-            onClick={() => navigate("/forgot-password")}
-            className="hover:text-blue-500 transition-all"
+            onClick={() => navigate("/password/forgot")}
+            className=" text-violet-500 hover:text-blue-600 transition-all font-medium"
           >
             Forgot Password?
           </button>
-          <span className="text-gray-400">or</span>
+        </div>
+
+        {/* Create account Link*/}
+        <div
+          className="mt-6 flex
+         text-sm text-gray-600"
+        >
           <button
             onClick={() => navigate("/register")}
-            className="hover:text-blue-500 transition-all"
+            className="hover:text-violet-500 transition-all cursor-pointer text-violet-500 font-medium"
           >
-            Create an Account
+            Create Account
           </button>
         </div>
 

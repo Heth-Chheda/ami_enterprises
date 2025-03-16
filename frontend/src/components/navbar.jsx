@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Menu, X, ShoppingCart } from "lucide-react";
-import { logout } from "@/store/slices/authenticationSlice";
+import { getUserInformation, logout } from "@/store/slices/authenticationSlice";
 import { toast } from "react-toastify";
 
 const Navbar = () => {
@@ -23,7 +23,7 @@ const Navbar = () => {
     (state) => state.authentication
   );
 
-  const profileImage = user?.profileImage || "https://i.pravatar.cc/40"; // Fallback profile image
+  const profileImage = user?.profileImageUrl; // Fallback profile image
   const profileRef = useRef(null);
 
   // Close dropdown on click outside
@@ -46,6 +46,10 @@ const Navbar = () => {
       console.error("Logout failed:", error);
     }
   };
+
+  useEffect(() => {
+    dispatch(getUserInformation());
+  }, [dispatch]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -107,6 +111,12 @@ const Navbar = () => {
                       : "opacity-0 scale-95 pointer-events-none"
                   }`}
                 >
+                  {/* ✅ Display User Name */}
+                  {user?.name && (
+                    <div className="px-4 py-2 text-gray-400 font-semibold border-b border-gray-700">
+                      {user.name}
+                    </div>
+                  )}
                   <Link
                     to="/profile"
                     className="block px-4 py-2 text-gray-300 hover:bg-gray-700"
@@ -191,6 +201,12 @@ const Navbar = () => {
                   alt="Profile"
                   className="w-12 h-12 rounded-full"
                 />
+                {/* ✅ Display User Name */}
+                {user?.name && (
+                  <div className="px-4 py-2 text-gray-400 font-semibold border-b border-gray-700">
+                    {user.name}
+                  </div>
+                )}
                 <Link
                   to="/profile"
                   className="text-gray-300 hover:text-blue-400 py-2"

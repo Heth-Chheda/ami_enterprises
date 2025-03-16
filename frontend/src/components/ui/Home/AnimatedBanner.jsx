@@ -18,7 +18,7 @@ const ads = [
     id: 3,
     text: "New Arrivals – Explore the latest collection now!",
     image:
-      "https://images.unsplash.com/photo-1581291518727-667ed41db2ff?q=80&w=1640&auto=format&fit=crop",
+      "https://img.freepik.com/free-vector/new-arrival-simple-modern-banner_1017-15629.jpg",
   },
 ];
 
