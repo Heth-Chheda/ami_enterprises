@@ -14,6 +14,8 @@ import OTP from "./pages/OTP";
 import ResetPassword from "./pages/ResetPassword";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
+import Dashboard from "./pages/Dashboard";
+import DashboardLayout from "./layout/DashboardLayout";
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
           <Route path="/otp-verification/:email" element={<OTP />} />
           <Route path="/password/reset/:token" element={<ResetPassword />} />
           <Route path="/about" element={<About />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/*" element={<DashboardLayout />} />
         </Routes>
         <ToastContainer theme="dark" />
         <Footer />

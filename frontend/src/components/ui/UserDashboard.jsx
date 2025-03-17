@@ -1,8 +1,6 @@
-import React from "react";
-// import logo_with_title from "../assets/logo-with-title-black.png";
-// import returnIcon from "../assets/redo.png";
-// import browseIcon from "../assets/pointing.png";
-// import bookIcon from "../assets/book-square.png";
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -16,7 +14,6 @@ import {
   PointElement,
   ArcElement,
 } from "chart.js";
-// import logo from "../assets/black-logo.png";
 
 ChartJS.register(
   CategoryScale,
@@ -31,7 +28,22 @@ ChartJS.register(
 );
 
 const UserDashboard = () => {
-  return <></>;
+  const navigate = useNavigate();
+
+  const { isAuthenticated } = useSelector((state) => state.authentication);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/"); // Redirect to Home if not authenticated
+    }
+  }, [isAuthenticated, navigate]);
+
+  return (
+    <div>
+      <h2>User Dashboard</h2>
+      {/* Your chart or dashboard content here */}
+    </div>
+  );
 };
 
 export default UserDashboard;

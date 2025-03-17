@@ -1,7 +1,7 @@
 // -------------------------------Imports------------------------------------------
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import User from "../models/userModel.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { catchAsyncErrorsMiddleware } from "../middlewares/catchAsyncErrorsMiddleware.js";
 import { sendVerificationCode } from "../utils/sendVerificationCode.js";

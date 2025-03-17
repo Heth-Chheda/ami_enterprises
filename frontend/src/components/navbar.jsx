@@ -48,7 +48,9 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    dispatch(getUserInformation());
+    if (isAuthenticated) {
+      dispatch(getUserInformation());
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -75,7 +77,7 @@ const Navbar = () => {
               <Link
                 key={label}
                 to={`/${label.toLowerCase()}`}
-                className="text-gray-300 hover:text-blue-400 transition duration-300 font-medium"
+                className="text-gray-300 hover:text-violet-400 transition duration-300 font-medium"
               >
                 {label}
               </Link>
@@ -84,10 +86,10 @@ const Navbar = () => {
             {/* Cart Icon */}
             <Link to="/cart" className="relative">
               <ShoppingCart
-                className="text-gray-300 hover:text-blue-400 transition duration-300"
+                className="text-gray-300 hover:text-violet-400 transition duration-300"
                 size={24}
               />
-              {cartCount > 0 && (
+              {cartCount >= 0 && (
                 <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
@@ -118,14 +120,16 @@ const Navbar = () => {
                     </div>
                   )}
                   <Link
-                    to="/profile"
+                    to="/dashboard"
                     className="block px-4 py-2 text-gray-300 hover:bg-gray-700"
+                    onClick={() => setIsProfileOpen(false)}
                   >
                     Profile
                   </Link>
                   <Link
                     to="/orders"
                     className="block px-4 py-2 text-gray-300 hover:bg-gray-700"
+                    onClick={() => setIsProfileOpen(false)}
                   >
                     Orders
                   </Link>
@@ -147,7 +151,7 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="bg-blue-600 text-white px-4 py-1.5 rounded-lg shadow-md hover:bg-blue-500 transition duration-300 text-sm"
+                className="bg-violet-600 text-white px-4 py-1.5 rounded-lg shadow-md hover:bg-violet-500 transition duration-300 text-sm"
               >
                 Login
               </Link>
@@ -159,10 +163,10 @@ const Navbar = () => {
             {/* Cart Icon */}
             <Link to="/cart" className="relative">
               <ShoppingCart
-                className="text-gray-300 hover:text-blue-400 transition duration-300"
+                className="text-gray-300 hover:text-violet-400 transition duration-300"
                 size={24}
               />
-              {cartCount > 0 && (
+              {cartCount >= 0 && (
                 <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
@@ -172,7 +176,7 @@ const Navbar = () => {
             {/* Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-blue-400 transition duration-300 cursor-pointer"
+              className="text-gray-300 hover:text-violet-400 transition duration-300 cursor-pointer"
             >
               {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
             </button>
@@ -186,7 +190,7 @@ const Navbar = () => {
               <Link
                 key={label}
                 to={`/${label.toLowerCase()}`}
-                className="block text-gray-300 hover:text-blue-400 py-3 px-6 border-b border-gray-700"
+                className="block text-gray-300 hover:text-violet-400 py-3 px-6 border-b border-gray-700"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {label}
@@ -208,22 +212,22 @@ const Navbar = () => {
                   </div>
                 )}
                 <Link
-                  to="/profile"
-                  className="text-gray-300 hover:text-blue-400 py-2"
+                  to="/dashboard"
+                  className="text-gray-300 hover:text-violet-400 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Profile
                 </Link>
                 <Link
                   to="/orders"
-                  className="text-gray-300 hover:text-blue-400 py-2"
+                  className="text-gray-300 hover:text-violet-400 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Orders
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-gray-300 hover:text-blue-400 py-2 text-left"
+                  className="text-gray-300 hover:text-violet-400 py-2 text-left"
                   disabled={isLoggingOut}
                 >
                   {isLoggingOut ? (
