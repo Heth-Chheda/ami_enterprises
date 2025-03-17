@@ -9,6 +9,7 @@ import {
   User2Icon,
   Menu,
   X,
+  LayoutDashboardIcon,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -62,7 +63,11 @@ const Sidebar = () => {
       <div className="md:hidden flex justify-between items-center p-4 bg-gray-900 text-white">
         <h1 className="text-xl font-semibold">Dashboard</h1>
         <button onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+          {isOpen ? (
+            <LayoutDashboardIcon size={24} />
+          ) : (
+            <LayoutDashboardIcon size={24} />
+          )}
         </button>
       </div>
 

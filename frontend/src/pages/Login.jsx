@@ -6,6 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import { getUserInformation, login } from "@/store/slices/authenticationSlice";
 import { FaSpinner } from "react-icons/fa";
+import { setUser } from "@/store/slices/cartSlice";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -37,6 +38,14 @@ const Login = () => {
       const result = await dispatch(login(form)).unwrap();
 
       toast.success(result?.message || "Login successful");
+
+      localStorage.setItem("auth_token", result?.token);
+      localStorage.setItem("user_id", result?.user_id);
+
+      if (result?.user_id) {
+        dispatch(setUser(result.user_id));
+      }
+
       navigate("/");
 
       // ✅ Unwrap and log user info

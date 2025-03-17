@@ -1,7 +1,7 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import { Provider } from "react-redux"; // Redux Provider
+import { Provider, useDispatch } from "react-redux"; // Redux Provider
 import { store } from "./store/store.js";
 
 // Pages
@@ -16,8 +16,25 @@ import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./layout/DashboardLayout";
+import ContactUs from "./pages/Contact";
+import CartPage from "./pages/CartPage";
+import { useEffect } from "react";
+import { setUser } from "./store/slices/cartSlice";
+import ProductPage from "./pages/Product";
+import ProductDetailPage from "./components/ui/Product/ProductDetailPage";
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    const userId = localStorage.getItem("user_id");
+
+    // ✅ Load user and cart if token and userId exist
+    if (token && userId) {
+      dispatch(setUser(userId));
+    }
+  }, [dispatch]);
   return (
     <Provider store={store}>
       {" "}
@@ -37,6 +54,10 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/*" element={<DashboardLayout />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/products" element={<ProductPage />} />
+          <Route path="/product/:productId" element={<ProductDetailPage />} />
         </Routes>
         <ToastContainer theme="dark" />
         <Footer />

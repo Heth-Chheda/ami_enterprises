@@ -6,6 +6,10 @@ import Sidebar from "@/components/Sidebar";
 import ManageProducts from "@/components/ui/Admin/ManageProducts";
 import ManageUsers from "@/components/ui/Admin/ManageUsers";
 import { useSelector } from "react-redux";
+import ManageOrders from "@/components/ui/Admin/ManageOrders";
+import MyWishlist from "@/components/ui/User/MyWishlist";
+import MyOrders from "@/components/ui/User/MyOrders";
+import OrderDetail from "@/components/ui/User/Orderdetail";
 
 const DashboardLayout = () => {
   const { isAuthenticated } = useSelector((state) => state.authentication);
@@ -28,6 +32,10 @@ const DashboardLayout = () => {
           <Route path="user" element={<UserDashboard />} />
           <Route path="manage-products" element={<ManageProducts />} />
           <Route path="manage-users" element={<ManageUsers />} />
+          <Route path="manage-orders" element={<ManageOrders />} />
+          <Route path="wishlist" element={<MyWishlist />} />
+          <Route path="my-orders" element={<MyOrders />} />
+          <Route path="order/:id" element={<OrderDetail />} />
         </Routes>
       </div>
     </div>

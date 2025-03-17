@@ -20,5 +20,6 @@ export const sendToken = (user, statusCode, message, res) => {
       success: true,
       message,
       token,
+      user_id: user._id,
     });
 };

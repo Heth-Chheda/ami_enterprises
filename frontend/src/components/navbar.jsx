@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Menu, X, ShoppingCart } from "lucide-react";
 import { getUserInformation, logout } from "@/store/slices/authenticationSlice";
+import { clearCart } from "@/store/slices/cartSlice"; // Import the clearCart action
 import { toast } from "react-toastify";
 
 const Navbar = () => {
@@ -10,20 +11,16 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  {
-    /* Cart Items Variables */
-  }
   const { cartItems } = useSelector((state) => state.cart);
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const dispatch = useDispatch();
 
-  // ✅ Get isAuthenticated and user from Redux state
   const { user, isAuthenticated } = useSelector(
     (state) => state.authentication
   );
 
-  const profileImage = user?.profileImageUrl; // Fallback profile image
+  const profileImage = user?.profileImageUrl;
   const profileRef = useRef(null);
 
   // Close dropdown on click outside
@@ -40,6 +37,11 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await dispatch(logout());
+      dispatch(clearCart()); // Reset cart in Redux when logging out
+      const userId = localStorage.getItem("user_id");
+      if (userId) {
+        localStorage.removeItem(`cart_${userId}`);
+      }
       setIsMenuOpen(false);
       toast.success("Logged out successfully!");
     } catch (error) {
@@ -51,13 +53,14 @@ const Navbar = () => {
     if (isAuthenticated) {
       dispatch(getUserInformation());
     }
-  }, [dispatch]);
+  }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) {
+      dispatch(clearCart()); // Reset cart when user is logged out
       setIsProfileOpen(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, dispatch]);
 
   return (
     <nav className="bg-gray-900 shadow-md sticky top-0 z-[100]">
@@ -89,7 +92,7 @@ const Navbar = () => {
                 className="text-gray-300 hover:text-violet-400 transition duration-300"
                 size={24}
               />
-              {cartCount >= 0 && (
+              {cartCount > 0 && (
                 <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
@@ -113,7 +116,6 @@ const Navbar = () => {
                       : "opacity-0 scale-95 pointer-events-none"
                   }`}
                 >
-                  {/* ✅ Display User Name */}
                   {user?.name && (
                     <div className="px-4 py-2 text-gray-400 font-semibold border-b border-gray-700">
                       {user.name}
@@ -160,20 +162,18 @@ const Navbar = () => {
 
           {/* Mobile Icons */}
           <div className="md:hidden flex items-center gap-4">
-            {/* Cart Icon */}
             <Link to="/cart" className="relative">
               <ShoppingCart
                 className="text-gray-300 hover:text-violet-400 transition duration-300"
                 size={24}
               />
-              {cartCount >= 0 && (
+              {cartCount > 0 && (
                 <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
               )}
             </Link>
 
-            {/* Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-300 hover:text-violet-400 transition duration-300 cursor-pointer"
@@ -196,8 +196,6 @@ const Navbar = () => {
                 {label}
               </Link>
             ))}
-
-            {/* Profile for Mobile */}
             {isAuthenticated ? (
               <div className="flex flex-col gap-2 p-4 border-t border-gray-700">
                 <img
@@ -205,7 +203,6 @@ const Navbar = () => {
                   alt="Profile"
                   className="w-12 h-12 rounded-full"
                 />
-                {/* ✅ Display User Name */}
                 {user?.name && (
                   <div className="px-4 py-2 text-gray-400 font-semibold border-b border-gray-700">
                     {user.name}

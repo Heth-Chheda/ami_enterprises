@@ -86,15 +86,6 @@ const AdminDashboard = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-
-        {/* Device Stats */}
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <h2 className="text-lg font-semibold mb-4">Device Stats</h2>
-          <p>Uptime: {stats.uptime}</p>
-          <p>First Seen: {stats.firstSeen}</p>
-          <p>Last Seen: {stats.lastSeen}</p>
-          <p>Memory Usage: {stats.memory} MB</p>
-        </div>
       </div>
 
       {/* User Sessions */}
@@ -158,29 +149,44 @@ const AdminDashboard = () => {
 
         {/* Product Table */}
         <div className="bg-white rounded-lg shadow-md p-4 overflow-x-auto">
-          <h2 className="text-lg font-semibold mb-4">Product Details</h2>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="border-b py-2 text-left">Product</th>
-                <th className="border-b py-2 text-right">Sold</th>
-                <th className="border-b py-2 text-right">Returned</th>
-                <th className="border-b py-2 text-right">Stock</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productData.map((product) => (
-                <tr key={product.id}>
-                  <td className="border-b py-2">{product.name}</td>
-                  <td className="border-b py-2 text-right">{product.sold}</td>
-                  <td className="border-b py-2 text-right">
-                    {product.returned}
-                  </td>
-                  <td className="border-b py-2 text-right">{product.stock}</td>
+          <h2 className="text-xl font-bold mb-4 text-violet-700">
+            Product Details
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-violet-700 text-white">
+                  <th className="py-3 px-4 text-left">Product</th>
+                  <th className="py-3 px-4 text-right">Sold</th>
+                  <th className="py-3 px-4 text-right">Returned</th>
+                  <th className="py-3 px-4 text-right">Stock</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {productData.map((product, index) => (
+                  <tr
+                    key={product.id}
+                    className={`${
+                      index % 2 === 0 ? "bg-gray-50" : "bg-gray-100"
+                    } hover:bg-gray-200 transition duration-200`}
+                  >
+                    <td className="py-3 px-4 border-b text-gray-700 whitespace-nowrap">
+                      {product.name}
+                    </td>
+                    <td className="py-3 px-4 border-b text-gray-700 text-right">
+                      {product.sold}
+                    </td>
+                    <td className="py-3 px-4 border-b text-gray-700 text-right">
+                      {product.returned}
+                    </td>
+                    <td className="py-3 px-4 border-b text-gray-700 text-right">
+                      {product.stock}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

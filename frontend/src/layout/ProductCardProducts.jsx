@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { FaHeart, FaRegHeart, FaPlus, FaMinus } from "react-icons/fa";
 
 const ProductCardProducts = ({
   id,
@@ -9,8 +10,14 @@ const ProductCardProducts = ({
   image,
   description,
   onAddToCart,
+  onRemoveFromCart,
   onViewDetails,
+  quantityInCart = 0,
+  isWishlisted = false,
+  onToggleWishlist,
 }) => {
+  const [wishlisted, setWishlisted] = useState(isWishlisted);
+
   return (
     <motion.div
       key={id}
@@ -18,7 +25,26 @@ const ProductCardProducts = ({
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      {/* Product Image with Overlay */}
+      {/* Wishlist Icon */}
+      <div className="absolute top-3 right-3 z-10">
+        <motion.button
+          onClick={(e) => {
+            e.stopPropagation();
+            setWishlisted(!wishlisted);
+            onToggleWishlist(id);
+          }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          {wishlisted ? (
+            <FaHeart className="text-violet-500 text-xl" />
+          ) : (
+            <FaRegHeart className="text-gray-400 text-xl" />
+          )}
+        </motion.button>
+      </div>
+
+      {/* Product Image */}
       <div className="relative overflow-hidden">
         <motion.img
           src={image}
@@ -37,31 +63,59 @@ const ProductCardProducts = ({
           {name}
         </h3>
 
-        {/* ✅ MRP and Our Price */}
+        {/* MRP and Our Price */}
         <div className="mt-1 flex items-center gap-2">
-          <p className="text-gray-400 text-base line-through">{mrp}</p>
-          <p className="text-gray-800 text-base font-semibold">{price}</p>
+          <p className="text-gray-400 text-base line-through">₹{mrp}</p>
+          <p className="text-violet-600 text-base font-semibold">₹{price}</p>
         </div>
 
         <p className="text-gray-500 mt-2 text-sm line-clamp-2">{description}</p>
 
-        {/* Buttons */}
+        {/* ✅ Dynamic Cart Button */}
         <div className="mt-5 flex gap-4 justify-center">
+          {quantityInCart > 0 ? (
+            <div className="flex items-center gap-2 bg-violet-100 text-violet-600 px-4 py-2 rounded-full shadow-md">
+              <motion.button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveFromCart(id);
+                }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <FaMinus />
+              </motion.button>
+              <span className="font-medium">{quantityInCart}</span>
+              <motion.button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToCart(id);
+                }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <FaPlus />
+              </motion.button>
+            </div>
+          ) : (
+            <motion.button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCart(id);
+              }}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-2 bg-violet-600 text-white font-medium rounded-full shadow-md hover:bg-violet-700 transition-all"
+            >
+              Add to Cart
+            </motion.button>
+          )}
+
+          {/* View Details Button */}
           <motion.button
             onClick={(e) => {
               e.stopPropagation();
-              onAddToCart();
-            }}
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-6 py-2 bg-blue-600 text-white font-medium rounded-full shadow-md hover:bg-blue-700 transition-all"
-          >
-            Add to Cart
-          </motion.button>
-          <motion.button
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewDetails();
+              onViewDetails(id);
             }}
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.95 }}
@@ -74,7 +128,7 @@ const ProductCardProducts = ({
 
       {/* Floating Badge */}
       <motion.div
-        className="absolute top-3 left-3 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+        className="absolute top-3 left-3 bg-violet-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
         initial={{ y: -10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, type: "spring", stiffness: 120 }}
