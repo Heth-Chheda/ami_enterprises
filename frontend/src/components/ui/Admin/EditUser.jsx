@@ -11,7 +11,20 @@ const EditUser = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { user, loading, error } = useSelector((state) => state.authentication);
+  const [userToEdit, setUserToEdit] = useState(null);
+
+  const fetchUser = async () => {
+    if (email) {
+      try {
+        const currentUser = await dispatch(getUserByUsernameOrEmail(email));
+        setUserToEdit(currentUser); // ✅ Set user data in state
+        console.log(currentUser);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    }
+  };
+  const { loading, error } = useSelector((state) => state.authentication);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -28,9 +41,7 @@ const EditUser = () => {
   const [isChanged, setIsChanged] = useState(false);
 
   useEffect(() => {
-    if (email) {
-      dispatch(getUserByUsernameOrEmail(email));
-    }
+    fetchUser();
   }, [dispatch, email]);
 
   const handleChange = (e) => {
@@ -59,15 +70,11 @@ const EditUser = () => {
   };
 
   const handleSubmit = async (e) => {
+    console.log("Form Data: ", formData);
     e.preventDefault();
     if (isChanged) {
       try {
-        await dispatch(
-          updateUserByEmail({
-            email,
-            data: formData,
-          })
-        );
+        await dispatch(updateUserByEmail(email, formData));
         navigate("/dashboard/manage-users");
       } catch (error) {
         console.error("Failed to update user:", error);
@@ -80,20 +87,22 @@ const EditUser = () => {
   };
 
   useEffect(() => {
-    if (user) {
+    if (userToEdit) {
       setFormData({
-        name: user.name || "",
-        email: user.email || "",
-        mobileNumber: user.mobileNumber || "",
-        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split("T")[0] : "",
-        gender: user.gender || "",
-        profileImageUrl: user.profileImageUrl || "",
-        user_role: user.user_role || "",
-        accountVerified: user.accountVerified || false,
-        status: user.status || "",
+        name: userToEdit.name || "",
+        email: userToEdit.email || "",
+        mobileNumber: userToEdit.mobileNumber || "",
+        dateOfBirth: userToEdit.dateOfBirth
+          ? userToEdit.dateOfBirth.split("T")[0]
+          : "",
+        gender: userToEdit.gender || "",
+        profileImageUrl: userToEdit.profileImageUrl || "",
+        user_role: userToEdit.user_role || "",
+        accountVerified: userToEdit.accountVerified || false,
+        status: userToEdit.status || "",
       });
     }
-  }, [user]);
+  }, [userToEdit]);
 
   return (
     <div className="p-6">
@@ -196,7 +205,7 @@ const EditUser = () => {
             >
               <option value="">Select Role</option>
               <option value="admin">Admin</option>
-              <option value="user">User</option>
+              <option value="customer">Customer</option>
             </select>
           </div>
 

@@ -67,7 +67,6 @@ const cartSlice = createSlice({
 
     setUser: (state, action) => {
       const userId = action.payload;
-      console.log("Setting user with ID:", userId); // Add this log to check the value
 
       const savedCart = localStorage.getItem(`cart_${userId}`);
 

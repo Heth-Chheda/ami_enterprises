@@ -131,7 +131,7 @@ const authenticationSlice = createSlice({
     // ✅ If successful
     getUserByUsernameOrEmailSuccess(state, action) {
       state.loading = false;
-      state.user = action.payload;
+      // state.user = action.payload;
       state.isAuthenticated = true;
     },
     // ✅ If failed
@@ -147,9 +147,8 @@ const authenticationSlice = createSlice({
     },
 
     updateUserSuccess(state, action) {
-      console.log("Updated user:", action.payload.user);
+      // console.log("Updated user:", action.payload.user);
       state.loading = false;
-      state.user = action.payload.user;
       state.message = action.payload.message;
     },
 
@@ -391,12 +390,12 @@ export const deleteUser = (id) => async (dispatch) => {
 
 // ✅ Async action to get user by username or email
 export const getUserByUsernameOrEmail = (search) => async (dispatch) => {
+  const params = { search };
+  console.log("Request Params:", params);
   dispatch(authenticationSlice.actions.getUserByUsernameOrEmailRequest());
   try {
     const res = await axios.get(
-      `http://localhost:4000/api/v1/authentication/admin/getUserByNameOrEmail?search=${encodeURIComponent(
-        search
-      )}`,
+      `http://localhost:4000/api/v1/authentication/admin/getUserByNameOrEmail?search=${search}`,
       {
         withCredentials: true,
       }
@@ -404,18 +403,24 @@ export const getUserByUsernameOrEmail = (search) => async (dispatch) => {
     dispatch(
       authenticationSlice.actions.getUserByUsernameOrEmailSuccess(res.data.user)
     );
+    return res.data.user; // ✅ Return the data for direct use
   } catch (error) {
     dispatch(
       authenticationSlice.actions.getUserByUsernameOrEmailFailed(
         error.response?.data?.message || "Failed to get user information"
       )
     );
+    throw error; // ✅ Throw the error to handle it in the component if needed
   }
 };
 
 // ✅ Action to update user by email
 export const updateUserByEmail = (email, data) => async (dispatch) => {
+  console.log(`➡️ Called updateUserByEmail with email: ${email}`);
+  console.log(`➡️ Data sent:`, data);
+
   dispatch(authenticationSlice.actions.updateUserRequest());
+
   try {
     const response = await axios.put(
       `http://localhost:4000/api/v1/authentication/admin/updateUserByEmail/${email}`,
@@ -424,6 +429,7 @@ export const updateUserByEmail = (email, data) => async (dispatch) => {
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials: true,
       }
     );
     dispatch(authenticationSlice.actions.updateUserSuccess(response.data));

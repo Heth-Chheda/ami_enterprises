@@ -60,7 +60,7 @@ const Sidebar = () => {
   return (
     <div>
       {/* Hamburger for mobile */}
-      <div className="md:hidden flex justify-between items-center p-4 bg-gray-900 text-white">
+      <div className="md:hidden flex justify-between items-center p-4 bg-purple-600 text-white">
         <h1 className="text-xl font-semibold">Dashboard</h1>
         <button onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? (
