@@ -1,103 +1,108 @@
 export const products = [
-    {
-      id: 1,
-      name: 'Gel Pen Set',
-      description: 'Smooth writing gel pens (Pack of 10)',
-      price: 199,
-      company: 'Classmate',
-      color: 'Multicolor',
-      ratings: 4,
-      image: 'https://via.placeholder.com/150'
-    },
-    {
-      id: 2,
-      name: 'A4 Notebook',
-      description: '200 pages ruled notebook',
-      price: 149,
-      company: 'Camlin',
-      color: 'Blue',
-      ratings: 5,
-      image: 'https://via.placeholder.com/150'
-    },
-    {
-      id: 3,
-      name: 'Mechanical Pencil',
-      description: '0.5mm lead mechanical pencil',
-      price: 79,
-      company: 'Faber-Castell',
-      color: 'Black',
-      ratings: 3,
-      image: 'https://via.placeholder.com/150'
-    },
-    {
-      id: 4,
-      name: 'Color Pencils Set',
-      description: 'Set of 24 vibrant colors',
-      price: 299,
-      company: 'Faber-Castell',
-      color: 'Multicolor',
-      ratings: 5,
-      image: 'https://via.placeholder.com/150'
-    },
-    {
-      id: 5,
-      name: 'Whiteboard Markers',
-      description: 'Set of 6 assorted color markers',
-      price: 249,
-      company: 'Reynolds',
-      color: 'Multicolor',
-      ratings: 4,
-      image: 'https://via.placeholder.com/150'
-    },
-    {
-      id: 6,
-      name: 'Sticky Notes',
-      description: 'Pack of 5 assorted colors',
-      price: 129,
-      company: '3M Post-it',
-      color: 'Multicolor',
-      ratings: 4,
-      image: 'https://via.placeholder.com/150'
-    },
-    {
-      id: 7,
-      name: 'Highlighter Set',
-      description: 'Set of 5 fluorescent highlighters',
-      price: 199,
-      company: 'Stabilo',
-      color: 'Multicolor',
-      ratings: 5,
-      image: 'https://via.placeholder.com/150'
-    },
-    {
-      id: 8,
-      name: 'Ballpoint Pens',
-      description: 'Pack of 10 smooth ballpoint pens',
-      price: 99,
-      company: 'Parker',
-      color: 'Blue',
-      ratings: 4,
-      image: 'https://via.placeholder.com/150'
-    },
-    {
-      id: 9,
-      name: 'Art Sketchbook',
-      description: 'A4 size, 100 GSM paper',
-      price: 349,
-      company: 'Camel',
-      color: 'White',
-      ratings: 3,
-      image: 'https://via.placeholder.com/150'
-    },
-    {
-      id: 10,
-      name: 'Glue Stick',
-      description: 'Non-toxic, fast drying glue stick',
-      price: 59,
-      company: 'Fevicol',
-      color: 'White',
-      ratings: 4,
-      image: 'https://via.placeholder.com/150'
-    }
-  ];
-  
+  {
+    id: 1,
+    name: "Gel Pen Set",
+    description: "Smooth writing gel pens (Pack of 10)",
+    price: 199,
+    company: "Classmate",
+    color: "Multicolor",
+    ratings: 4,
+    image: "https://images.meesho.com/images/products/390779160/jpsxb_1200.jpg",
+  },
+  {
+    id: 2,
+    name: "A4 Notebook",
+    description: "200 pages ruled notebook",
+    price: 149,
+    company: "Camlin",
+    color: "Blue",
+    ratings: 5,
+    image:
+      "https://anupamstationery.com/wp-content/uploads/2021/12/One-of-a-Kind-NoteBook-7.jpg",
+  },
+  {
+    id: 3,
+    name: "Mechanical Pencil",
+    description: "0.5mm lead mechanical pencil",
+    price: 79,
+    company: "Faber-Castell",
+    color: "Black",
+    ratings: 3,
+    image: "https://m.media-amazon.com/images/I/81jUr30FYXL.jpg",
+  },
+  {
+    id: 4,
+    name: "Color Pencils Set",
+    description: "Set of 24 vibrant colors",
+    price: 299,
+    company: "Faber-Castell",
+    color: "Multicolor",
+    ratings: 5,
+    image:
+      "https://www.htconline.in/images/thumbs/0011380_faber-castell-albrecht-durer-artist-water-colour-pencil-set-of-24_600.jpeg",
+  },
+  {
+    id: 5,
+    name: "Whiteboard Markers",
+    description: "Set of 6 assorted color markers",
+    price: 249,
+    company: "Reynolds",
+    color: "Multicolor",
+    ratings: 4,
+    image:
+      "https://soniofficemate.com/wp-content/uploads/2017/04/516132214-wbm-bister-product.png",
+  },
+  {
+    id: 6,
+    name: "Sticky Notes",
+    description: "Pack of 5 assorted colors",
+    price: 129,
+    company: "3M Post-it",
+    color: "Multicolor",
+    ratings: 4,
+    image:
+      "https://rukminim3.flixcart.com/image/850/1000/l1dwknk0/post-it/c/v/6/pop-up-sticky-notes-refills-bright-colors-notes-pads-super-original-imagcyzcrgkddygy.jpeg?q=90&crop=false",
+  },
+  {
+    id: 7,
+    name: "Highlighter Set",
+    description: "Set of 5 fluorescent highlighters",
+    price: 199,
+    company: "Stabilo",
+    color: "Multicolor",
+    ratings: 5,
+    image: "https://itsybitsy.in/cdn/shop/products/UBST38334.jpg?v=1551945756",
+  },
+  {
+    id: 8,
+    name: "Ballpoint Pens",
+    description: "Pack of 10 smooth ballpoint pens",
+    price: 99,
+    company: "Parker",
+    color: "Blue",
+    ratings: 4,
+    image:
+      "https://rukminim3.flixcart.com/image/850/1000/xif0q/shopsy-pen/e/z/w/80-doms-0-6-gl-ball-point-pen-blue-ink-pack-of-80-gcm-original-imaghjxhqpczgu5h.jpeg?q=90&crop=false",
+  },
+  {
+    id: 9,
+    name: "Art Sketchbook",
+    description: "A4 size, 100 GSM paper",
+    price: 349,
+    company: "Camel",
+    color: "White",
+    ratings: 3,
+    image:
+      "https://images-cdn.ubuy.co.in/67af650bc259bf234a416646-fuxi-9-x-12-sketch-book-top-spiral.jpg",
+  },
+  {
+    id: 10,
+    name: "Glue Stick",
+    description: "Non-toxic, fast drying glue stick",
+    price: 59,
+    company: "Fevicol",
+    color: "White",
+    ratings: 4,
+    image: "https://monafstores.com/wp-content/uploads/2020/06/Fevi_Stick.jpg",
+  },
+];

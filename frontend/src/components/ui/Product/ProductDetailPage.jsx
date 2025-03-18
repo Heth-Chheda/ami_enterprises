@@ -37,6 +37,16 @@ const ProductDetailPage = () => {
     comment: "",
   });
 
+  const initialAverageRating =
+    ((product.rating || 0) * (product.numReviews || 0) +
+      reviews.reduce((acc, review) => acc + review.rating, 0)) /
+    ((product.numReviews || 0) + reviews.length || 1);
+
+  const averageRating =
+    ((product.rating || 0) * (product.numReviews || 0) +
+      reviews.reduce((acc, review) => acc + review.rating, 0)) /
+    ((product.numReviews || 0) + reviews.length || 1);
+
   if (!product) {
     return (
       <div className="flex items-center justify-center h-screen text-center text-2xl text-gray-500">
@@ -44,12 +54,6 @@ const ProductDetailPage = () => {
       </div>
     );
   }
-
-  // Calculate average rating
-  const averageRating =
-    reviews.length > 0
-      ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
-      : 0;
 
   // Handle review submission
   const handleSubmitReview = (e) => {
@@ -120,7 +124,7 @@ const ProductDetailPage = () => {
             </li>
             <li>
               <strong>Ratings:</strong> {averageRating.toFixed(1)} ⭐ (
-              {reviews.length} reviews)
+              {(product.numReviews || 0) + reviews.length} reviews)
             </li>
             <li>
               <strong>Availability:</strong>{" "}
@@ -157,7 +161,7 @@ const ProductDetailPage = () => {
                 isWishlisted
                   ? "bg-red-500 text-white"
                   : "border border-gray-400 text-gray-800"
-              } px-8 py-3 rounded-md shadow-md hover:border-violet-600 hover:text-violet-600 transition-transform transform hover:scale-105`}
+              } px-8 py-3 rounded-md shadow-md hover:border-violet-600 hover:text-white transition-transform transform hover:scale-105`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleWishlist}
