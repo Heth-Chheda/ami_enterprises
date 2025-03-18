@@ -9,6 +9,7 @@ const authenticationSlice = createSlice({
     message: null,
     user: JSON.parse(localStorage.getItem("user")) || null,
     isAuthenticated: !!localStorage.getItem("user"),
+    users: [],
   },
   reducers: {
     registrationRequest(state) {
@@ -106,7 +107,57 @@ const authenticationSlice = createSlice({
     updatePasswordFailed(state, action) {
       (state.loading = false), (state.error = action.payload);
     },
+    getAllUsersPending: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    getAllUsersSuccess: (state, action) => {
+      state.loading = false;
+      state.users = action.payload;
+    },
+    getAllUsersFailed: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    removeUser: (state, action) => {
+      state.users = state.users.filter((user) => user.id !== action.payload);
+    },
+    // ✅ Start fetching user by name/email
+    getUserByUsernameOrEmailRequest(state) {
+      state.loading = true;
+      state.error = null;
+      state.message = null;
+    },
+    // ✅ If successful
+    getUserByUsernameOrEmailSuccess(state, action) {
+      state.loading = false;
+      state.user = action.payload;
+      state.isAuthenticated = true;
+    },
+    // ✅ If failed
+    getUserByUsernameOrEmailFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    // ✅ Request State
+    updateUserRequest(state) {
+      state.loading = true;
+      state.error = null;
+      state.message = null;
+    },
 
+    updateUserSuccess(state, action) {
+      console.log("Updated user:", action.payload.user);
+      state.loading = false;
+      state.user = action.payload.user;
+      state.message = action.payload.message;
+    },
+
+    // ✅ Failed State
+    updateUserFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
     resetAuthenticationSlice(state) {
       (state.loading = false),
         (state.error = null),
@@ -305,6 +356,85 @@ export const updatePassword = (data) => async (dispatch) => {
         )
       );
     });
+};
+
+// Action to fetch users
+export const getAllUsers = () => async (dispatch) => {
+  dispatch(authenticationSlice.actions.getAllUsersPending());
+  try {
+    const res = await axios.get(
+      "http://localhost:4000/api/v1/authentication/admin/getAllUsers",
+      {
+        withCredentials: true,
+      }
+    );
+    dispatch(authenticationSlice.actions.getAllUsersSuccess(res.data.users)); // ✅ Success action
+  } catch (error) {
+    dispatch(
+      authenticationSlice.actions.getAllUsersFailed(
+        error.response?.data?.message || "Failed to fetch users"
+      )
+    ); // ✅ Error action
+  }
+};
+// Delete user
+export const deleteUser = (id) => async (dispatch) => {
+  try {
+    await axios.delete(
+      `http://localhost:4000/api/v1/authentication/users/${id}`
+    );
+    dispatch(authenticationSlice.actions.removeUser(id));
+  } catch (error) {
+    console.error("Failed to delete user:", error);
+  }
+};
+
+// ✅ Async action to get user by username or email
+export const getUserByUsernameOrEmail = (search) => async (dispatch) => {
+  dispatch(authenticationSlice.actions.getUserByUsernameOrEmailRequest());
+  try {
+    const res = await axios.get(
+      `http://localhost:4000/api/v1/authentication/admin/getUserByNameOrEmail?search=${encodeURIComponent(
+        search
+      )}`,
+      {
+        withCredentials: true,
+      }
+    );
+    dispatch(
+      authenticationSlice.actions.getUserByUsernameOrEmailSuccess(res.data.user)
+    );
+  } catch (error) {
+    dispatch(
+      authenticationSlice.actions.getUserByUsernameOrEmailFailed(
+        error.response?.data?.message || "Failed to get user information"
+      )
+    );
+  }
+};
+
+// ✅ Action to update user by email
+export const updateUserByEmail = (email, data) => async (dispatch) => {
+  dispatch(authenticationSlice.actions.updateUserRequest());
+  try {
+    const response = await axios.put(
+      `http://localhost:4000/api/v1/authentication/admin/updateUserByEmail/${email}`,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    dispatch(authenticationSlice.actions.updateUserSuccess(response.data));
+  } catch (error) {
+    dispatch(
+      authenticationSlice.actions.updateUserFailed(
+        error.response?.data?.message ||
+          "Failed to update user. Please try again."
+      )
+    );
+  }
 };
 
 export default authenticationSlice.reducer;

@@ -1,10 +1,13 @@
 import FilterBar from "@/components/ui/Product/Filter";
 // import ProductCard from "@/components/ui/Product/ProductDisplay";
 import ProductDetail from "@/components/ui/ProductDetail";
-import { products } from "@/data/products";
+// import { products } from "@/data/products";
 import React, { useState, useEffect } from "react";
 import { FiFilter, FiSearch } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
+import { getAllProducts } from "@/store/slices/productSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const ProductPage = () => {
   const [filters, setFilters] = useState({
@@ -14,11 +17,19 @@ const ProductPage = () => {
     priceRange: [0, 1000],
     ratings: [],
   });
-
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortOption, setSortOption] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  const dispatch = useDispatch();
+  const { products, status, error } = useSelector((state) => state.product);
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(getAllProducts());
+    }
+  }, [status, dispatch]);
 
   // Handle window resize for responsive filter behavior
   useEffect(() => {
@@ -52,10 +63,23 @@ const ProductPage = () => {
       product.price >= filters.priceRange[0] &&
       product.price <= filters.priceRange[1];
     const matchesRatings =
-      filters.ratings.length === 0 || filters.ratings.includes(product.ratings);
+      filters.ratings.length === 0 ||
+      filters.ratings.includes(product.ratings?.average);
     const matchesSearchTerm = product.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
+
+    if (status === "loading") {
+      return (
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin h-10 w-10 border-4 border-violet-500 border-t-transparent rounded-full"></div>
+        </div>
+      );
+    }
+
+    if (status === "failed") {
+      toast.error("Failed to Load the products");
+    }
 
     return (
       matchesCompany &&
@@ -151,7 +175,7 @@ const ProductPage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <ProductDetail key={product.id} product={product} />
+              <ProductDetail key={product._id} product={product} />
             ))
           ) : (
             <p className="text-center col-span-full">No products found.</p>

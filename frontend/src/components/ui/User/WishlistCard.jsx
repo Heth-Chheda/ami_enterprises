@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai"; // Import heart icons
 
 const WishlistCard = ({
-  id,
+  _id,
   name,
   mrp,
   price,
@@ -17,12 +17,12 @@ const WishlistCard = ({
   const handleWishlistToggle = (e) => {
     e.stopPropagation(); // Prevent triggering onClick (navigation)
     setIsInWishlist(!isInWishlist);
-    onToggleWishlist(id); // Notify parent to update wishlist state
+    onToggleWishlist(_id); // Notify parent to update wishlist state
   };
 
   return (
     <motion.div
-      key={id}
+      key={_id}
       onClick={onClick}
       className="relative cursor-pointer border border-gray-200 rounded-xl overflow-hidden shadow-md bg-white hover:shadow-lg transition-all"
       whileHover={{ scale: 1.02 }}
@@ -57,8 +57,8 @@ const WishlistCard = ({
 
         {/* ✅ MRP and Our Price */}
         <div className="mt-1 flex items-center gap-2">
-          <p className="text-gray-400 text-base line-through">{mrp}</p>
-          <p className="text-gray-800 text-base font-semibold">{price}</p>
+          <p className="text-gray-400 text-base line-through">₹{mrp}</p>
+          <p className="text-gray-800 text-base font-semibold">₹{price}</p>
         </div>
 
         <p className="text-gray-500 mt-2 text-sm line-clamp-2">{description}</p>

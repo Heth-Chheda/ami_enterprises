@@ -1,6 +1,5 @@
 import { useParams } from "react-router-dom";
-import { products } from "@/data/products";
-import { useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/store/slices/cartSlice";
@@ -8,44 +7,31 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "@/store/slices/wishlistSlice";
+import {
+  clearSelectedProduct,
+  getProductById,
+} from "@/store/slices/productSlice";
 
 const ProductDetailPage = () => {
   const { productId } = useParams();
-  const product = products.find((p) => p.id === Number(productId));
   const dispatch = useDispatch();
 
+  const product = useSelector((state) => state.product.selectedProduct);
+  const status = useSelector((state) => state.product.status);
+
   const isWishlisted = useSelector((state) =>
-    state.wishlist.wishlistItems.some((item) => item.id === product?.id)
+    state.wishlist.wishlistItems.some((item) => item._id === product?._id)
   );
 
-  const handleWishlist = () => {
-    if (isWishlisted) {
-      dispatch(removeFromWishlist(product.id));
-    } else {
-      dispatch(addToWishlist(product));
+  useEffect(() => {
+    if (productId) {
+      dispatch(getProductById(productId));
     }
-  };
 
-  const handleAddToCart = () => {
-    dispatch(addToCart(product));
-  };
-
-  const [reviews, setReviews] = useState(product?.reviews || []);
-  const [newReview, setNewReview] = useState({
-    name: "",
-    rating: 0,
-    comment: "",
-  });
-
-  const initialAverageRating =
-    ((product.rating || 0) * (product.numReviews || 0) +
-      reviews.reduce((acc, review) => acc + review.rating, 0)) /
-    ((product.numReviews || 0) + reviews.length || 1);
-
-  const averageRating =
-    ((product.rating || 0) * (product.numReviews || 0) +
-      reviews.reduce((acc, review) => acc + review.rating, 0)) /
-    ((product.numReviews || 0) + reviews.length || 1);
+    return () => {
+      dispatch(clearSelectedProduct());
+    };
+  }, [dispatch, productId]);
 
   if (!product) {
     return (
@@ -55,14 +41,20 @@ const ProductDetailPage = () => {
     );
   }
 
-  // Handle review submission
-  const handleSubmitReview = (e) => {
-    e.preventDefault();
-    if (newReview.name && newReview.rating > 0 && newReview.comment) {
-      setReviews([...reviews, newReview]);
-      setNewReview({ name: "", rating: 0, comment: "" });
+  const handleAddToCart = () => {
+    dispatch(addToCart(product));
+  };
+
+  const handleWishlist = () => {
+    if (isWishlisted) {
+      dispatch(removeFromWishlist(product._id));
+    } else {
+      dispatch(addToWishlist(product));
     }
   };
+
+  const averageRating = product.ratings?.average || 0;
+  const totalReviews = product.ratings?.count || 0;
 
   return (
     <div className="container mx-auto px-6 py-12">
@@ -75,7 +67,7 @@ const ProductDetailPage = () => {
       >
         {/* Product Image */}
         <motion.img
-          src={product.image}
+          src={product.images[0]}
           alt={product.name}
           className="w-full h-[500px] object-cover rounded-lg shadow-xl"
           whileHover={{ scale: 1.05 }}
@@ -93,15 +85,29 @@ const ProductDetailPage = () => {
             {product.name}
           </motion.h1>
 
-          <motion.p
-            className="text-2xl text-violet-600 font-semibold my-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            ₹{product.price}
-          </motion.p>
+          {/* Price and Discount */}
+          <div className="flex items-center gap-4 my-4">
+            <motion.span
+              className="text-2xl font-semibold text-violet-600"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              ₹{product.price.toFixed(2)}
+            </motion.span>
+            {product.mrp > product.price && (
+              <motion.span
+                className="text-xl text-gray-500 line-through"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                ₹{product.mrp.toFixed(2)}
+              </motion.span>
+            )}
+          </div>
 
+          {/* Description */}
           <motion.p
             className="text-gray-600 text-lg leading-relaxed"
             initial={{ opacity: 0 }}
@@ -117,18 +123,19 @@ const ProductDetailPage = () => {
               <strong>Company:</strong> {product.company}
             </li>
             <li>
-              <strong>Color:</strong> {product.color}
+              <strong>SKU:</strong> {product.stockKeepingUnit}
             </li>
             <li>
-              <strong>Category:</strong> {product.category || "Not specified"}
+              <strong>Category:</strong>{" "}
+              {product.categories.map((category) => category.name).join(", ")}
             </li>
             <li>
               <strong>Ratings:</strong> {averageRating.toFixed(1)} ⭐ (
-              {(product.numReviews || 0) + reviews.length} reviews)
+              {totalReviews} reviews)
             </li>
             <li>
               <strong>Availability:</strong>{" "}
-              {product.inStock ? (
+              {product.stockQuantity > 0 ? (
                 <span className="text-green-500 font-semibold">In Stock</span>
               ) : (
                 <span className="text-red-500 font-semibold">Out of Stock</span>
@@ -136,13 +143,40 @@ const ProductDetailPage = () => {
             </li>
           </ul>
 
+          {/* Product Variants */}
+          {product.variants?.length > 0 && (
+            <div className="mt-6">
+              <strong>Available Variants:</strong>
+              <div className="flex gap-4 mt-2">
+                {product.variants.map((variant) => (
+                  <div
+                    key={variant.color.hexCode}
+                    className="flex items-center gap-2 border rounded-md px-3 py-1"
+                  >
+                    <span
+                      className="w-5 h-5 rounded-full"
+                      style={{ backgroundColor: variant.color.hexCode }}
+                    />
+                    <span>{variant.color.name}</span>
+                    <span className="text-gray-500">({variant.size})</span>
+                    <span>
+                      {variant.stockQuantity > 0 ? (
+                        <span className="text-green-500">In Stock</span>
+                      ) : (
+                        <span className="text-red-500">Out of Stock</span>
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="mt-8 flex gap-4">
-            {product.inStock ? (
+            {product.stockQuantity > 0 ? (
               <motion.button
                 className="bg-violet-600 text-white px-8 py-3 rounded-md shadow-md hover:bg-violet-700 transition-transform transform hover:scale-105"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
                 onClick={handleAddToCart}
               >
                 Add to Cart
@@ -161,9 +195,7 @@ const ProductDetailPage = () => {
                 isWishlisted
                   ? "bg-red-500 text-white"
                   : "border border-gray-400 text-gray-800"
-              } px-8 py-3 rounded-md shadow-md hover:border-violet-600 hover:text-white transition-transform transform hover:scale-105`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              } px-8 py-3 rounded-md shadow-md hover:border-violet-600 hover:text-white transition-transform`}
               onClick={handleWishlist}
             >
               {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
@@ -171,64 +203,6 @@ const ProductDetailPage = () => {
           </div>
         </div>
       </motion.div>
-
-      {/* ⭐ Review Section */}
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          Customer Reviews ({reviews.length})
-        </h2>
-
-        {/* Review Form */}
-        <form
-          onSubmit={handleSubmitReview}
-          className="bg-gray-50 p-6 rounded-lg shadow-md"
-        >
-          <div className="flex flex-col gap-4">
-            <input
-              type="text"
-              placeholder="Your name"
-              value={newReview.name}
-              onChange={(e) =>
-                setNewReview({ ...newReview, name: e.target.value })
-              }
-              className="border rounded-md px-4 py-2"
-              required
-            />
-            <select
-              value={newReview.rating}
-              onChange={(e) =>
-                setNewReview({ ...newReview, rating: Number(e.target.value) })
-              }
-              className="border rounded-md px-4 py-2"
-              required
-            >
-              <option value="0">Select Rating</option>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <option key={star} value={star}>
-                  {star} ⭐
-                </option>
-              ))}
-            </select>
-            <textarea
-              placeholder="Write a review"
-              value={newReview.comment}
-              onChange={(e) =>
-                setNewReview({ ...newReview, comment: e.target.value })
-              }
-              className="border rounded-md px-4 py-2 h-28"
-              required
-            />
-            <motion.button
-              type="submit"
-              className="bg-violet-600 text-white px-8 py-2 rounded-md shadow-md hover:bg-violet-700"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Submit Review
-            </motion.button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 };

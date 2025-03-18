@@ -6,6 +6,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import authenticationRoutes from "./routes/authenticationRoutes.js";
+import productsRoutes from "./routes/productsRoute.js";
+import seedRoute from "./routes/seedRoute.js";
 
 export const app = express();
 
@@ -28,6 +30,11 @@ app.use(
 /// ----------------------- Authentication Routes --------------------------
 app.use("/api/v1/authentication", authenticationRoutes);
 
+/// --------------------- Product Routes -----------------------------------
+app.use("/api", productsRoutes);
+
+//----------------- Seed Routes for adding data to collections------------
+app.use("/api/v1/seed", seedRoute);
 // -------------------Connection to the Database -----------------------
 connectionToDatabase();
 

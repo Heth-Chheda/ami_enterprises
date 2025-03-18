@@ -17,8 +17,8 @@ const MyWishlist = () => {
   };
 
   // ✅ Handle product removal from wishlist
-  const handleToggleWishlist = (id) => {
-    dispatch(removeFromWishlist(id));
+  const handleToggleWishlist = (_id) => {
+    dispatch(removeFromWishlist(_id));
   };
 
   return (
@@ -37,15 +37,15 @@ const MyWishlist = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {wishlistProducts.map((product) => (
             <WishlistCard
-              key={product.id}
-              id={product.id}
+              key={product._id}
+              id={product._id}
               name={product.name}
               mrp={product.mrp}
               price={product.price}
               image={product.image}
               description={product.description}
-              onClick={() => handleProductClick(product.id)}
-              onToggleWishlist={() => handleToggleWishlist(product.id)}
+              onClick={() => handleProductClick(product._id)}
+              onToggleWishlist={() => handleToggleWishlist(product._id)}
             />
           ))}
         </div>

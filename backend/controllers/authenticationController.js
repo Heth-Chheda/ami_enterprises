@@ -1,4 +1,4 @@
-// -------------------------------Imports------------------------------------------
+// -------------------------------Imports-------------------------------------
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
@@ -387,6 +387,8 @@ export const updateUserByEmail = catchAsyncErrorsMiddleware(
     const { email } = req.params;
 
     const updateUserDetials = req.body;
+
+    console.log(updateUserDetials);
 
     if (!updateUserDetials || Object.keys(updateUserDetials).length === 0) {
       return next(new ErrorHandler("Nothing to update?", 400));

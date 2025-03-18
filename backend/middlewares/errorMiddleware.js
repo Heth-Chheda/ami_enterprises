@@ -43,7 +43,7 @@ export const errorMiddleware = (err, req, res, next) => {
   }
 
   // Logging for debugging purposes
-  console.error(`[ERROR] ${statusCode} - ${message}`);
+  // console.error(`[ERROR] ${statusCode} - ${message}`);
 
   // Send the error response
   return res.status(statusCode).json({

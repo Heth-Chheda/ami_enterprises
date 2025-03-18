@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/store/slices/cartSlice";
 import {
@@ -14,18 +14,20 @@ const ProductDetail = ({ product }) => {
 
   // Check if the product is already in the wishlist
   const isWishlisted = useSelector((state) =>
-    state.wishlist.wishlistItems.some((item) => item.id === product.id)
+    state.wishlist.wishlistItems.some((item) => item._id === product._id)
   );
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.stopPropagation(); // ✅ Stop the event from triggering the parent click
     if (product) {
       dispatch(addToCart(product));
     }
   };
 
-  const toggleWishlist = () => {
+  const toggleWishlist = (e) => {
+    e.stopPropagation(); // ✅ Stop the event from triggering the parent click
     if (isWishlisted) {
-      dispatch(removeFromWishlist(product.id));
+      dispatch(removeFromWishlist(product._id));
     } else {
       dispatch(addToWishlist(product));
     }
@@ -34,7 +36,7 @@ const ProductDetail = ({ product }) => {
   return (
     <div
       className="border rounded-lg overflow-hidden shadow-md bg-white hover:shadow-xl transition duration-300 flex flex-col h-full relative hover:scale-105 cursor-pointer"
-      onClick={() => navigate(`/product/${product.id}`)}
+      onClick={() => navigate(`/product/${product._id}`)}
     >
       {/* Wishlist Icon */}
       <div
@@ -59,19 +61,19 @@ const ProductDetail = ({ product }) => {
       <div className="p-4 flex flex-col flex-grow">
         <h2 className="text-lg font-semibold">{product.name}</h2>
         <p className="text-gray-600 text-sm">{product.description}</p>
-        <p className="text-violet-600 font-bold mt-2">₹{product.price}</p>
+        <p className="text-violet-600 font-bold mt-2">
+          <span className="mr-3 text-gray-400 line-through">
+            ₹{product.mrp}
+          </span>
+          ₹{product.price}
+        </p>
 
         {/* Ratings */}
         <div className="flex items-center mt-2">
           {[...Array(5)].map((_, i) => (
-            <span key={i}>{i < product.ratings ? "⭐" : "☆"}</span>
+            <span key={i}>{i < product.ratings?.average ? "⭐" : "☆"}</span>
           ))}
         </div>
-
-        {/* Extra Info */}
-        <p className="text-gray-500 text-sm mt-2">
-          {product.company} | {product.color}
-        </p>
 
         {/* Add to Cart Button */}
         <button
