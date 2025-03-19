@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import Cookies from "js-cookies";
 
 const initialState = {
   products: [],
@@ -32,6 +33,24 @@ export const getProductById = createAsyncThunk(
       return response.data.product;
     } catch (error) {
       return rejectWithValue(error.response.data);
+    }
+  }
+);
+export const updateProductById = createAsyncThunk(
+  "product/updateProductById",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/api/products/${id}`,
+        data,
+        {
+          withCredentials: true,
+        }
+      );
+
+      return response.data.product;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
 );
@@ -70,6 +89,22 @@ const productSlice = createSlice({
         state.selectedProduct = action.payload;
       })
       .addCase(getProductById.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+      // ✅ Handle updating product by ID
+      .addCase(updateProductById.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(updateProductById.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        // ✅ Update the product in the state
+        state.selectedProduct = action.payload;
+        state.products = state.products.map((product) =>
+          product._id === action.payload._id ? action.payload : product
+        );
+      })
+      .addCase(updateProductById.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

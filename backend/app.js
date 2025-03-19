@@ -8,6 +8,7 @@ import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import authenticationRoutes from "./routes/authenticationRoutes.js";
 import productsRoutes from "./routes/productsRoute.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import wishlistRoute from "./routes/wishlistRoutes.js";
 import seedRoute from "./routes/seedRoute.js";
 
 export const app = express();
@@ -36,6 +37,9 @@ app.use("/api", productsRoutes);
 
 //----------------------- Order Routes -------------------------------------
 app.use("/api/v1/user/orders", orderRoutes);
+
+//--------------------------- WishList ----------------------------------
+app.use("/api/user/wishlist", wishlistRoute);
 
 //----------------- Seed Routes for adding data to collections------------
 app.use("/api/v1/seed", seedRoute);

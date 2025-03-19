@@ -3,6 +3,6 @@ import { getOrdersByUserId } from "../controllers/orderController.js";
 
 const router = express.Router();
 
-router.get("/order/:userId", getOrdersByUserId);
+router.get("/user/:userId", getOrdersByUserId);
 
 export default router;

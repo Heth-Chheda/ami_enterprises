@@ -11,7 +11,7 @@ import MyWishlist from "@/components/ui/User/MyWishlist";
 import MyOrders from "@/components/ui/User/MyOrders";
 import OrderDetail from "@/components/ui/User/Orderdetail";
 import EditUser from "@/components/ui/Admin/EditUser";
-// import EditPage from "@/components/ui/Admin/EditPage";
+import EditProduct from "@/components/ui/Admin/EditProduct";
 
 const DashboardLayout = () => {
   const { isAuthenticated } = useSelector((state) => state.authentication);
@@ -39,6 +39,7 @@ const DashboardLayout = () => {
           <Route path="my-orders" element={<MyOrders />} />
           <Route path="order/:id" element={<OrderDetail />} />
           <Route path="editUser/:email" element={<EditUser />} />
+          <Route path="product/edit/:id" element={<EditProduct />} />
         </Routes>
       </div>
     </div>

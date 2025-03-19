@@ -72,11 +72,7 @@ const productSchema = mongoose.Schema(
       {
         type: String,
         trim: true,
-        validate: {
-          validator: (value) =>
-            /^(https?:\/\/.*\.(?:png|jpg|jpeg|webp|svg|gif))$/i.test(value),
-          message: "Invalid image URL",
-        },
+        default: "https://example.com/default-image.png",
       },
     ],
     company: { type: String, trim: true },

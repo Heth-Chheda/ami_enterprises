@@ -1,9 +1,15 @@
 import { getAllProducts } from "@/store/slices/productSlice";
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const ManageProducts = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleEdit = (id) => {
+    navigate(`/dashboard/product/edit/${id}`);
+  };
 
   const { products, status, error } = useSelector((state) => state.product);
 
@@ -107,7 +113,10 @@ const ManageProducts = () => {
                 <td className="p-3 whitespace-nowrap">
                   <div className="flex gap-2">
                     <button
-                      onClick={() => console.log(`Edit ${product._id}`)}
+                      onClick={() => {
+                        handleEdit(product._id);
+                        console.log(`Edit ${product._id}`);
+                      }}
                       className="bg-violet-500 text-white px-3 py-1 rounded-lg hover:bg-violet-600 transition duration-200 text-xs sm:text-sm"
                     >
                       Edit

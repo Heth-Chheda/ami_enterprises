@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import Cookies from "js-cookies";
 
 const authenticationSlice = createSlice({
   name: "authentication",
@@ -231,6 +232,9 @@ export const login = createAsyncThunk(
           },
         }
       );
+      if (res.data.token) {
+        Cookies.setItem("token", response.data.token); // ✅ Set token in cookies
+      }
 
       localStorage.setItem("user", JSON.stringify(res.data));
       return res.data; // ✅ Return data directly for unwrap
