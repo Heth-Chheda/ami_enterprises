@@ -7,6 +7,7 @@ import cors from "cors";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import authenticationRoutes from "./routes/authenticationRoutes.js";
 import productsRoutes from "./routes/productsRoute.js";
+import orderRoutes from "./routes/orderRoutes.js";
 import seedRoute from "./routes/seedRoute.js";
 
 export const app = express();
@@ -32,6 +33,9 @@ app.use("/api/v1/authentication", authenticationRoutes);
 
 /// --------------------- Product Routes -----------------------------------
 app.use("/api", productsRoutes);
+
+//----------------------- Order Routes -------------------------------------
+app.use("/api/v1/user/orders", orderRoutes);
 
 //----------------- Seed Routes for adding data to collections------------
 app.use("/api/v1/seed", seedRoute);

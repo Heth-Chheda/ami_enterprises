@@ -42,6 +42,11 @@ const Sidebar = () => {
             label: "Manage Users",
             icon: <User2Icon />,
           },
+          {
+            path: "/dashboard/wishlist",
+            label: "Wishlist",
+            icon: <Heart />,
+          },
         ]
       : [
           { path: "/dashboard/user", label: "User Dashboard", icon: <User /> },

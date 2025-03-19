@@ -1,10 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const FilterBar = ({ filters, setFilters }) => {
   const [isOpen, setIsOpen] = useState(true);
-
-
 
   // Handle change functions
   const handleCompanyChange = (company) => {
@@ -50,15 +48,31 @@ const FilterBar = ({ filters, setFilters }) => {
       ratings: [],
     });
   };
+  // ✅ Set isOpen based on screen size in useEffect
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsOpen(true); // ✅ Open filters on larger screens
+      } else {
+        setIsOpen(false); // ✅ Close filters on smaller screens
+      }
+    };
+
+    handleResize(); // ✅ Set initial state on component mount
+
+    window.addEventListener("resize", handleResize); // ✅ Listen for resize events
+
+    return () => window.removeEventListener("resize", handleResize); // ✅ Clean up event listener
+  }, []);
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-5 w-full md:w-64">
+    <div className="bg-white rounded-xl shadow-md p-5 w-full md:w-full">
       {/* Toggle Button for Mobile */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold text-gray-800">Filters</h3>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="text-violet-500 focus:outline-none"
+          className="text-violet-500 focus:outline-none md:hidden" // Hide on larger screens
         >
           {isOpen ? <FaChevronUp size={20} /> : <FaChevronDown size={20} />}
         </button>

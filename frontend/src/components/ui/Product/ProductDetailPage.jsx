@@ -123,9 +123,6 @@ const ProductDetailPage = () => {
               <strong>Company:</strong> {product.company}
             </li>
             <li>
-              <strong>SKU:</strong> {product.stockKeepingUnit}
-            </li>
-            <li>
               <strong>Category:</strong>{" "}
               {product.categories.map((category) => category.name).join(", ")}
             </li>
@@ -193,9 +190,9 @@ const ProductDetailPage = () => {
             <motion.button
               className={`${
                 isWishlisted
-                  ? "bg-red-500 text-white"
+                  ? "bg-red-500 text-white hover:text-white"
                   : "border border-gray-400 text-gray-800"
-              } px-8 py-3 rounded-md shadow-md hover:border-violet-600 hover:text-white transition-transform`}
+              } px-8 py-3 rounded-md shadow-md hover:border-violet-600 hover:text-violet-400 transition-transform`}
               onClick={handleWishlist}
             >
               {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
