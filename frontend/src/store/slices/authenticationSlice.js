@@ -233,7 +233,7 @@ export const login = createAsyncThunk(
         }
       );
       if (res.data.token) {
-        Cookies.setItem("token", response.data.token); // ✅ Set token in cookies
+        Cookies.setItem("token", res.data.token); // ✅ Set token in cookies
       }
 
       localStorage.setItem("user", JSON.stringify(res.data));
