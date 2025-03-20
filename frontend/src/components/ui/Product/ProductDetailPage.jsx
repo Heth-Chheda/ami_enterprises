@@ -1,8 +1,12 @@
 import { useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart } from "@/store/slices/cartSlice";
+import {
+  addToCart,
+  decrementQuantity,
+  removeFromCart,
+} from "@/store/slices/cartSlice";
 import {
   addToWishlist,
   removeFromWishlist,
@@ -17,7 +21,11 @@ const ProductDetailPage = () => {
   const dispatch = useDispatch();
 
   const product = useSelector((state) => state.product.selectedProduct);
-  const status = useSelector((state) => state.product.status);
+  const cartItems = useSelector((state) => state.cart.cartItems);
+
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const averageRating = product?.ratings?.average || 0;
+  const totalReviews = product?.ratings?.count || 0;
 
   const isWishlisted = useSelector((state) =>
     state.wishlist.wishlistItems.some((item) => item._id === product?._id)
@@ -33,17 +41,62 @@ const ProductDetailPage = () => {
     };
   }, [dispatch, productId]);
 
+  useEffect(() => {
+    if (product?.variants?.length > 0) {
+      const availableVariant = product.variants.find(
+        (variant) => variant.stockQuantity > 0
+      );
+      setSelectedVariant(availableVariant || null);
+    }
+  }, [product]);
+
   if (!product) {
     return (
-      <div className="flex items-center justify-center h-screen text-center text-2xl text-gray-500">
+      <div className="flex items-center justify-center h-screen text-2xl text-gray-400">
         Product not found!
       </div>
     );
   }
 
+  const existingCartItem = cartItems.find(
+    (item) =>
+      item._id === product._id &&
+      (!selectedVariant ||
+        (item.selectedVariant &&
+          item.selectedVariant.color.name === selectedVariant.color.name &&
+          item.selectedVariant.size === selectedVariant.size))
+  );
+
   const handleAddToCart = () => {
-    dispatch(addToCart(product));
+    const itemToAdd = selectedVariant
+      ? { ...product, selectedVariant, quantity: 1 }
+      : { ...product, quantity: 1 };
+    dispatch(addToCart(itemToAdd));
   };
+
+  const handleIncreaseQuantity = () => {
+    if (existingCartItem && selectedVariant) {
+      if (existingCartItem.quantity < selectedVariant.stockQuantity) {
+        const updatedItem = {
+          ...existingCartItem,
+          quantity: existingCartItem.quantity + 1,
+        };
+        dispatch(addToCart(updatedItem));
+      }
+    }
+  };
+
+  const handleDecreaseQuantity = () => {
+    if (existingCartItem) {
+      if (existingCartItem.quantity >= 0) {
+        dispatch(decrementQuantity(existingCartItem));
+      } else {
+        dispatch(removeFromCart(existingCartItem._id));
+      }
+    }
+  };
+
+  const handleVariantSelect = (variant) => setSelectedVariant(variant);
 
   const handleWishlist = () => {
     if (isWishlisted) {
@@ -53,12 +106,8 @@ const ProductDetailPage = () => {
     }
   };
 
-  const averageRating = product.ratings?.average || 0;
-  const totalReviews = product.ratings?.count || 0;
-
   return (
     <div className="container mx-auto px-6 py-12">
-      {/* Product Info Section */}
       <motion.div
         className="grid grid-cols-1 md:grid-cols-2 gap-12"
         initial={{ opacity: 0, y: 50 }}
@@ -69,86 +118,70 @@ const ProductDetailPage = () => {
         <motion.img
           src={product.images[0]}
           alt={product.name}
-          className="w-full h-[500px] object-cover rounded-lg shadow-xl"
-          whileHover={{ scale: 1.05 }}
+          className="w-full h-[500px] object-cover rounded-xl shadow-md hover:shadow-lg transition duration-300"
+          whileHover={{ scale: 1.03 }}
           transition={{ type: "spring", stiffness: 300 }}
         />
 
         {/* Product Info */}
-        <div>
-          <motion.h1
-            className="text-4xl font-bold text-gray-800"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+        <div className="space-y-6">
+          <h1 className="text-4xl font-extrabold text-gray-800">
             {product.name}
-          </motion.h1>
+          </h1>
+
+          <p className="text-gray-500 text-lg">
+            By{" "}
+            <span className="text-violet-600 font-semibold">
+              {product.company}
+            </span>
+          </p>
+
+          {/* Categories */}
+          <div className="flex flex-wrap gap-2">
+            {product.categories?.map((category) => (
+              <span
+                key={category._id}
+                className="bg-violet-100 text-violet-600 px-3 py-1 rounded-full text-sm font-medium"
+              >
+                {category.name}
+              </span>
+            ))}
+          </div>
 
           {/* Price and Discount */}
-          <div className="flex items-center gap-4 my-4">
-            <motion.span
-              className="text-2xl font-semibold text-violet-600"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
+          <div className="flex items-center gap-4">
+            <span className="text-2xl font-bold text-violet-600">
               ₹{product.price.toFixed(2)}
-            </motion.span>
+            </span>
             {product.mrp > product.price && (
-              <motion.span
-                className="text-xl text-gray-500 line-through"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
+              <span className="text-gray-400 line-through">
                 ₹{product.mrp.toFixed(2)}
-              </motion.span>
+              </span>
             )}
           </div>
 
+          {/* Ratings */}
+          <div className="flex items-center gap-2 text-yellow-400">
+            ⭐ {averageRating} ({totalReviews} reviews)
+          </div>
+
           {/* Description */}
-          <motion.p
-            className="text-gray-600 text-lg leading-relaxed"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            {product.description}
-          </motion.p>
+          <p className="text-gray-600 leading-relaxed">{product.description}</p>
 
-          {/* Additional Details */}
-          <ul className="mt-6 space-y-3 text-gray-700">
-            <li>
-              <strong>Company:</strong> {product.company}
-            </li>
-            <li>
-              <strong>Category:</strong>{" "}
-              {product.categories.map((category) => category.name).join(", ")}
-            </li>
-            <li>
-              <strong>Ratings:</strong> {averageRating.toFixed(1)} ⭐ (
-              {totalReviews} reviews)
-            </li>
-            <li>
-              <strong>Availability:</strong>{" "}
-              {product.stockQuantity > 0 ? (
-                <span className="text-green-500 font-semibold">In Stock</span>
-              ) : (
-                <span className="text-red-500 font-semibold">Out of Stock</span>
-              )}
-            </li>
-          </ul>
-
-          {/* Product Variants */}
+          {/* Variants */}
           {product.variants?.length > 0 && (
-            <div className="mt-6">
+            <div>
               <strong>Available Variants:</strong>
-              <div className="flex gap-4 mt-2">
+              <div className="flex gap-3 mt-2">
                 {product.variants.map((variant) => (
                   <div
                     key={variant.color.hexCode}
-                    className="flex items-center gap-2 border rounded-md px-3 py-1"
+                    className={`flex items-center gap-2 border rounded-lg px-4 py-2 cursor-pointer transition ${
+                      selectedVariant === variant
+                        ? "border-violet-600 bg-violet-100"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                    onClick={() => handleVariantSelect(variant)}
                   >
                     <span
                       className="w-5 h-5 rounded-full"
@@ -156,13 +189,6 @@ const ProductDetailPage = () => {
                     />
                     <span>{variant.color.name}</span>
                     <span className="text-gray-500">({variant.size})</span>
-                    <span>
-                      {variant.stockQuantity > 0 ? (
-                        <span className="text-green-500">In Stock</span>
-                      ) : (
-                        <span className="text-red-500">Out of Stock</span>
-                      )}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -170,33 +196,42 @@ const ProductDetailPage = () => {
           )}
 
           {/* Action Buttons */}
-          <div className="mt-8 flex gap-4">
-            {product.stockQuantity > 0 ? (
-              <motion.button
-                className="bg-violet-600 text-white px-8 py-3 rounded-md shadow-md hover:bg-violet-700 transition-transform transform hover:scale-105"
+          <div className="flex gap-4">
+            {existingCartItem ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDecreaseQuantity}
+                  className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md"
+                >
+                  -
+                </button>
+                <span>{existingCartItem.quantity}</span>
+                <button
+                  onClick={handleIncreaseQuantity}
+                  className="bg-violet-500 hover:bg-violet-600 text-white px-3 py-2 rounded-md"
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <button
                 onClick={handleAddToCart}
+                className="bg-violet-500 hover:bg-violet-600 text-white px-6 py-3 rounded-md"
               >
                 Add to Cart
-              </motion.button>
-            ) : (
-              <motion.button
-                className="bg-gray-500 text-white px-8 py-3 rounded-md shadow-md"
-                disabled
-              >
-                Out of Stock
-              </motion.button>
+              </button>
             )}
 
-            <motion.button
-              className={`${
-                isWishlisted
-                  ? "bg-red-500 text-white hover:text-white"
-                  : "border border-gray-400 text-gray-800"
-              } px-8 py-3 rounded-md shadow-md hover:border-violet-600 hover:text-violet-400 transition-transform`}
+            <button
               onClick={handleWishlist}
+              className={`border ${
+                isWishlisted
+                  ? "border-violet-500 text-violet-500"
+                  : "border-gray-300 text-gray-600"
+              } px-6 py-3 rounded-md hover:bg-gray-100`}
             >
-              {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-            </motion.button>
+              {isWishlisted ? "❤️ Wishlisted" : "♡ Add to Wishlist"}
+            </button>
           </div>
         </div>
       </motion.div>

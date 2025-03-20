@@ -42,6 +42,7 @@ const Navbar = () => {
       if (userId) {
         localStorage.removeItem(`cart_${userId}`);
       }
+      localStorage.removeItem("user_id");
       setIsMenuOpen(false);
       toast.success("Logged out successfully!");
     } catch (error) {

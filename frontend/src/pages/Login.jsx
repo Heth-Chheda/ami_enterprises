@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { getUserInformation, login } from "@/store/slices/authenticationSlice";
 import { FaSpinner } from "react-icons/fa";
 import { setUser } from "@/store/slices/cartSlice";
+import { loadWishlist } from "@/store/slices/wishlistSlice";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -44,6 +45,9 @@ const Login = () => {
 
       if (result?.user_id) {
         dispatch(setUser(result.user_id));
+
+        // ✅ Load wishlist after setting user ID
+        dispatch(loadWishlist(result.user_id));
       }
 
       navigate("/");

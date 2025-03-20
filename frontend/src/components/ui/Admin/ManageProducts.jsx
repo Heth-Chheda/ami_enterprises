@@ -101,7 +101,7 @@ const ManageProducts = () => {
 
                 {/* Price */}
                 <td className="p-3 text-sm sm:text-base whitespace-nowrap">
-                  ${product.price.toFixed(2)}
+                  ₹{product.price.toFixed(2)}
                 </td>
 
                 {/* Stock */}

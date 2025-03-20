@@ -73,14 +73,14 @@ const CartPage = () => {
         <div className="space-y-6">
           {cartItems.map((item) => (
             <div
-              key={item.id}
+              key={item._id}
               className="flex items-center justify-between bg-gradient-to-r from-white to-gray-100 
               backdrop-blur-lg rounded-xl shadow-md p-5 border hover:shadow-2xl transition-all 
               duration-300 transform hover:-translate-y-1"
             >
               <div className="flex items-center space-x-4">
                 <img
-                  src={item.image}
+                  src={item.images[0]}
                   alt={item.name}
                   className="w-20 h-20 object-cover rounded-lg border border-gray-300 transition-all 
                   duration-300 hover:scale-105"

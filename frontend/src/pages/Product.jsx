@@ -26,13 +26,8 @@ const ProductPage = () => {
     }
   }, [status, dispatch]);
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-  };
-
-  const handleSortChange = (e) => {
-    setSortOption(e.target.value);
-  };
+  const handleFilterChange = (newFilters) => setFilters(newFilters);
+  const handleSortChange = (e) => setSortOption(e.target.value);
 
   let filteredProducts = products.filter((product) => {
     const matchesCompany =
@@ -58,7 +53,7 @@ const ProductPage = () => {
     );
   });
 
-  // Sorting Logic
+  // ✅ Sorting Logic
   if (sortOption === "priceLowHigh") {
     filteredProducts.sort((a, b) => a.price - b.price);
   } else if (sortOption === "priceHighLow") {
@@ -67,18 +62,22 @@ const ProductPage = () => {
     filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sortOption === "nameDesc") {
     filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+  } else if (sortOption === "discount") {
+    filteredProducts.sort(
+      (a, b) => (b.mrp - b.price) / b.mrp - (a.mrp - a.price) / a.mrp
+    );
   }
 
   return (
     <div className="flex flex-col md:flex-row gap-4">
-      {/* Filter Section */}
+      {/* ✅ Filter Section */}
       <div className="w-full md:w-1/4 bg-gradient-to-br from-violet-400 to-violet-600 text-white shadow-xl rounded-xl p-6 border border-gray-300">
         <FilterBar filters={filters} setFilters={handleFilterChange} />
       </div>
 
-      {/* Product Section */}
+      {/* ✅ Product Section */}
       <div className="w-full my-5 px-2 sm:px-4 md:px-6 lg:px-8">
-        {/* Search and Sorting Section */}
+        {/* ✅ Search and Sorting Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
           {/* Search Bar */}
           <div className="relative w-full md:w-2/3">
@@ -87,11 +86,11 @@ const ProductPage = () => {
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
+              className="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
             <FiSearch
               size={20}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-violet-500 transition-colors"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
             />
           </div>
 
@@ -99,45 +98,28 @@ const ProductPage = () => {
           <select
             value={sortOption}
             onChange={handleSortChange}
-            className="w-full md:w-1/3 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all bg-gray-100 hover:bg-gray-200"
+            className="w-full md:w-1/3 p-3 border border-gray-300 rounded-xl bg-gray-100 hover:bg-gray-200"
           >
             <option value="">Sort By</option>
             <option value="priceLowHigh">Price: Low to High</option>
             <option value="priceHighLow">Price: High to Low</option>
             <option value="nameAsc">Name: A-Z</option>
             <option value="nameDesc">Name: Z-A</option>
+            <option value="discount">Discount %</option>
           </select>
         </div>
 
-        {/* Product Grid */}
-        {status === "loading" ? (
-          <div className="flex justify-center items-center h-40">
-            <div className="animate-spin h-10 w-10 border-4 border-violet-500 border-t-transparent rounded-full"></div>
-          </div>
-        ) : status === "failed" ? (
-          toast.error("Failed to load the products")
-        ) : filteredProducts.length > 0 ? (
-          <div
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-            style={{
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", // ✅ Prevent cards from becoming too thin
-            }}
-          >
-            {filteredProducts.map((product) => (
-              <div
-                key={product._id}
-                className="bg-white shadow-md rounded-xl p-4 transition-transform duration-300 hover:scale-105 hover:shadow-xl border border-gray-200"
-                style={{
-                  minWidth: "200px", // ✅ Set a minimum width to prevent shrinking
-                }}
-              >
-                <ProductDetail product={product} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-gray-500">No products found.</p>
-        )}
+        {/* ✅ Product Count */}
+        <p className="text-gray-500 mb-2">
+          Showing {filteredProducts.length} products
+        </p>
+
+        {/* ✅ Product Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filteredProducts.map((product) => (
+            <ProductDetail key={product._id} product={product} />
+          ))}
+        </div>
       </div>
     </div>
   );

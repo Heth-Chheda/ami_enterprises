@@ -42,7 +42,7 @@ const MyWishlist = () => {
               name={product.name}
               mrp={product.mrp}
               price={product.price}
-              image={product.image}
+              image={product.images[0]}
               description={product.description}
               onClick={() => handleProductClick(product._id)}
               onToggleWishlist={() => handleToggleWishlist(product._id)}

@@ -1,42 +1,55 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { Heart, Minus, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart } from "@/store/slices/cartSlice";
+import { addToCart, decrementQuantity } from "@/store/slices/cartSlice";
 import {
   addToWishlist,
   removeFromWishlist,
 } from "@/store/slices/wishlistSlice";
-import { Heart } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 
 const ProductDetail = ({ product }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const isWishlisted = useSelector((state) =>
+  // ✅ Check if the product is already in the cart
+  const cartItem = useSelector((state) =>
+    state.cart.cartItems.find(
+      (item) =>
+        item._id === product._id &&
+        (!product.selectedVariant ||
+          (item.selectedVariant &&
+            item.selectedVariant.color.name ===
+              product.selectedVariant.color.name &&
+            item.selectedVariant.size === product.selectedVariant.size))
+    )
+  );
+
+  // ✅ Check if the product is already in the wishlist
+  const isInWishlist = useSelector((state) =>
     state.wishlist.wishlistItems.some((item) => item._id === product._id)
   );
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const discount = product.mrp
+    ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+    : 0;
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) =>
-        prevIndex === product.images.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [product.images]);
-
-  const handleAddToCart = (e) => {
+  // ✅ Handle Increment
+  const handleIncrement = (e) => {
     e.stopPropagation();
     dispatch(addToCart(product));
   };
 
-  const toggleWishlist = (e) => {
+  // ✅ Handle Decrement
+  const handleDecrement = (e) => {
     e.stopPropagation();
-    if (isWishlisted) {
+    dispatch(decrementQuantity(product));
+  };
+
+  // ✅ Toggle Wishlist
+  const toggleWishlist = (e) => {
+    e.stopPropagation(); // Prevent navigation to the product detail page
+    if (isInWishlist) {
       dispatch(removeFromWishlist(product._id));
     } else {
       dispatch(addToWishlist(product));
@@ -45,68 +58,90 @@ const ProductDetail = ({ product }) => {
 
   return (
     <div
-      className="border rounded-lg shadow-md bg-white hover:shadow-lg transition duration-300 cursor-pointer flex flex-col w-full max-w-[280px] overflow-hidden"
+      className="border border-gray-200 rounded-xl shadow-md bg-white transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer overflow-hidden"
       onClick={() => navigate(`/product/${product._id}`)}
     >
-      {/* Image Section */}
-      <div className="relative w-full h-56 overflow-hidden">
-        <AnimatePresence>
-          <motion.img
-            key={currentImageIndex}
-            src={product.images[currentImageIndex]}
-            alt={`${product.name} - ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          />
-        </AnimatePresence>
+      {/* ✅ Image Section */}
+      <div className="relative w-full h-48">
+        <img
+          src={product.images[0]}
+          alt={product.name}
+          className="w-full h-full object-cover"
+        />
 
-        {/* Wishlist Icon */}
-        <div
-          className="absolute top-2 right-2 z-10 cursor-pointer"
-          onClick={toggleWishlist}
-        >
+        {/* ✅ Discount Badge */}
+        {discount > 0 && (
+          <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
+            {discount}% OFF
+          </span>
+        )}
+
+        {/* ✅ Wishlist Icon */}
+        <div className="absolute top-2 right-2">
           <Heart
             size={24}
-            className={isWishlisted ? "text-red-500" : "text-gray-400"}
-            fill={isWishlisted ? "currentColor" : "none"}
+            className={`cursor-pointer ${
+              isInWishlist ? "text-red-500" : "text-gray-400"
+            } hover:text-red-500`}
+            fill={isInWishlist ? "currentColor" : "none"}
+            onClick={toggleWishlist}
           />
         </div>
       </div>
 
-      {/* Product Info */}
-      <div className="p-4 flex flex-col gap-1">
-        <h2 className="text-sm font-medium text-gray-700">{product.name}</h2>
+      {/* ✅ Product Info */}
+      <div className="p-4">
+        <h2 className="text-sm font-semibold truncate">{product.name}</h2>
         <p className="text-gray-500 text-xs truncate">{product.description}</p>
 
-        {/* Price Section */}
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-gray-400 line-through text-sm">
-            ₹{product.mrp}
-          </span>
-          <span className="text-violet-600 font-semibold text-sm">
+        {/* ✅ Price Section */}
+        <div className="flex items-center gap-2 mt-2">
+          {product.mrp && (
+            <span className="text-gray-400 line-through text-sm">
+              ₹{product.mrp}
+            </span>
+          )}
+          <span className="text-violet-600 font-semibold">
             ₹{product.price}
           </span>
         </div>
 
-        {/* Ratings */}
-        <div className="flex items-center mt-1">
+        {/* ✅ Ratings */}
+        <div className="flex items-center gap-1 mt-2">
           {[...Array(5)].map((_, i) => (
-            <span key={i} className="text-yellow-500">
+            <span key={i} className="text-yellow-400">
               {i < product.ratings?.average ? "⭐" : "☆"}
             </span>
           ))}
         </div>
 
-        {/* Add to Cart Button */}
-        <button
-          className="mt-2 bg-violet-600 text-white text-sm py-2 rounded hover:bg-violet-700 transition"
-          onClick={handleAddToCart}
-        >
-          ADD TO CART
-        </button>
+        {/* ✅ Add to Cart Section */}
+        <div className="mt-4">
+          {cartItem ? (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={handleDecrement}
+                className="bg-red-500 text-white px-3 py-1 rounded-full hover:bg-violet-700 transition"
+              >
+                <Minus size={20} />
+              </button>
+              <span className="text-sm font-semibold">{cartItem.quantity}</span>
+              <button
+                onClick={handleIncrement}
+                className="bg-violet-600 text-white px-3 py-1 rounded-full hover:bg-violet-700 transition"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleIncrement}
+              className="bg-violet-600 text-white px-4 py-2 rounded-full hover:bg-violet-700 transition w-full mt-2"
+            >
+              Add to Cart
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
