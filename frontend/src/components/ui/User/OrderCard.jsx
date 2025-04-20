@@ -1,44 +1,51 @@
 import React from "react";
+import { ArrowRight } from "lucide-react";
 
 const OrderCard = ({ order, onClick }) => {
   return (
     <div
-      className="border rounded-lg p-6 shadow-sm cursor-pointer 
-        hover:shadow-md transition-transform transform hover:-translate-y-1 
-        bg-white hover:border-violet-400"
+      className="relative border border-gray-200 rounded-2xl p-5 shadow-sm cursor-pointer 
+      hover:shadow-lg transition-all duration-300 bg-white 
+      hover:border-violet-500 hover:ring-2 hover:ring-violet-100"
       onClick={onClick}
     >
-      <div className="flex justify-between items-center">
-        {/* ✅ Left Side: Order Details */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            Order #{order.id}
+      {/* Decorative Top Line */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 via-pink-400 to-indigo-500 rounded-t-2xl" />
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+        {/* ✅ Left Side: Order Info */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-bold text-gray-900 tracking-tight">
+            Order{" "}
+            <span className="text-violet-600">#{order._id.slice(-6)}</span>
           </h3>
-          <p className="text-gray-500 text-sm mt-1">
-            Total:{" "}
-            <span className="font-medium text-gray-700">{order.total}</span>
+          <p className="text-sm text-gray-600">
+            <span className="font-semibold text-gray-800">
+              ₹{order.totalAmount}
+            </span>{" "}
+            • {order.orderItems?.length || 0} item
+            {order.orderItems?.length > 1 ? "s" : ""}
           </p>
-          <p className="text-gray-400 text-sm">Items: {order.items.length}</p>
         </div>
 
-        {/* ✅ Right Side: Status and Arrow */}
-        <div className="flex items-center space-x-2">
-          {/* ✅ Status Badge */}
+        {/* ✅ Right Side: Status & Arrow */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Status Badge */}
           <span
-            className={`px-3 py-1 text-sm font-medium rounded-full 
+            className={`px-3 py-1 text-xs font-semibold rounded-full border
               ${
-                order.status === "Delivered"
-                  ? "bg-green-100 text-green-700"
-                  : order.status === "Shipped"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : "bg-blue-100 text-blue-700"
+                order.orderStatus === "Delivered"
+                  ? "bg-green-100 text-green-700 border-green-300"
+                  : order.orderStatus === "Shipped"
+                  ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+                  : "bg-blue-100 text-blue-700 border-blue-300"
               }`}
           >
-            {order.status}
+            {order.orderStatus}
           </span>
 
-          {/* ✅ Forward Arrow */}
-          <span className="text-gray-400">➔</span>
+          {/* Arrow Icon */}
+          <ArrowRight className="text-gray-400 w-5 h-5 hidden sm:block" />
         </div>
       </div>
     </div>

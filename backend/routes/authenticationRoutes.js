@@ -11,6 +11,7 @@ import {
   resetPassword,
   updatePassword,
   updateUserByEmail,
+  updateUserProfile,
   verifyOTP,
 } from "../controllers/authenticationController.js";
 import { isAuthenticatedUser } from "../middlewares/authenticationMiddleware.js";
@@ -27,6 +28,7 @@ router.get("/get-user", isAuthenticatedUser, getUser); // get the details of the
 router.post("/password/forgot", forgotPassword);
 router.put("/password/reset/:token", resetPassword);
 router.put("/password/update", isAuthenticatedUser, updatePassword);
+router.put("/updateUser", isAuthenticatedUser, updateUserProfile);
 
 // Admin Functionalities
 router.get("/admin/getAllUsers", isAuthenticatedUser, verifyAdmin, getAllUsers);

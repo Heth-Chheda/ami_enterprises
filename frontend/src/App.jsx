@@ -22,6 +22,7 @@ import { useEffect } from "react";
 import { setUser } from "./store/slices/cartSlice";
 import ProductPage from "./pages/Product";
 import ProductDetailPage from "./components/ui/Product/ProductDetailPage";
+import Checkout from "./pages/Checkout";
 
 function App() {
   const dispatch = useDispatch();
@@ -58,6 +59,7 @@ function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/products" element={<ProductPage />} />
           <Route path="/product/:productId" element={<ProductDetailPage />} />
+          <Route path="/checkout" element={<Checkout />} />
         </Routes>
         <ToastContainer theme="dark" />
         <Footer />

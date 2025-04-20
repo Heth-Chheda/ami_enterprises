@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Menu, X, ShoppingCart } from "lucide-react";
 import { getUserInformation, logout } from "@/store/slices/authenticationSlice";
@@ -15,6 +15,7 @@ const Navbar = () => {
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { user, isAuthenticated } = useSelector(
     (state) => state.authentication
@@ -44,6 +45,7 @@ const Navbar = () => {
       }
       localStorage.removeItem("user_id");
       setIsMenuOpen(false);
+      navigate("/");
       toast.success("Logged out successfully!");
     } catch (error) {
       console.error("Logout failed:", error);

@@ -436,3 +436,77 @@ export const deleteUserByEmail = catchAsyncErrorsMiddleware(
     });
   }
 );
+
+// -------------------------- UPDATE USER DETAILS ------------------------------
+export const updateUserProfile = catchAsyncErrorsMiddleware(
+  async (req, res, next) => {
+    const userId = req.user._id;
+
+    const allowedFields = [
+      "name",
+      "mobileNumber",
+      "dateOfBirth",
+      "gender",
+      "addresses",
+      "profileImageUrl",
+      "status",
+      "email", // Added email update
+    ];
+
+    const updates = {};
+
+    // Check if the fields are provided in the request and add to updates
+    for (const key of allowedFields) {
+      if (req.body[key] !== undefined) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    // Ensure the email is unique (if it's being updated)
+    if (updates.email) {
+      const existingEmailUser = await User.findOne({ email: updates.email });
+      if (existingEmailUser) {
+        return next(
+          new ErrorHandler(
+            "Email is already taken, please choose another one.",
+            400
+          )
+        );
+      }
+    }
+
+    // If "addresses" is included in the request body, add the new address without overwriting
+    if (req.body.addresses && req.body.addresses.length > 0) {
+      const user = await User.findById(userId);
+
+      // If there's already a list of addresses, push the new one to it
+      user.addresses.push(...req.body.addresses);
+
+      // Mark the first address as default if it's not marked already
+      if (!user.addresses[0].isDefault) {
+        user.addresses[0].isDefault = true;
+      }
+
+      // Don't update the "addresses" directly through `updates`
+      updates.addresses = user.addresses;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return next(
+        new ErrorHandler("No valid fields provided for update.", 400)
+      );
+    }
+
+    // Update the user and return the updated details
+    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User details updated successfully.",
+      user: updatedUser,
+    });
+  }
+);

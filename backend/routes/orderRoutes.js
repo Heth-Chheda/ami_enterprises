@@ -1,8 +1,9 @@
 import express from "express";
-import { getOrdersByUserId } from "../controllers/orderController.js";
+import { getUserOrders } from "../controllers/orderController.js";
+import { isAuthenticatedUser } from "../middlewares/authenticationMiddleware.js";
 
 const router = express.Router();
 
-router.get("/user/:userId", getOrdersByUserId);
+router.get("/getUserOrders", isAuthenticatedUser, getUserOrders);
 
 export default router;

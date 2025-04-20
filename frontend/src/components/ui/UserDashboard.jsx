@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -9,16 +9,25 @@ import {
   UserCheck,
   ShieldCheck,
   BadgeCheck,
+  Heart,
+  Minus,
+  Plus,
 } from "lucide-react";
+import { addToCart, decrementQuantity } from "@/store/slices/cartSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "@/store/slices/wishlistSlice";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector(
     (state) => state.authentication
   );
+  const wishlistItems = useSelector((state) => state.wishlist.wishlistItems);
+  const cartItems = useSelector((state) => state.cart.cartItems);
 
-  const [editable, setEditable] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -32,9 +41,8 @@ const UserDashboard = () => {
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/"); // Redirect to Home if not authenticated
-    } else if (user) {
+    if (!isAuthenticated) navigate("/");
+    else if (user) {
       setFormData({
         name: user.name || "",
         email: user.email || "",
@@ -49,26 +57,135 @@ const UserDashboard = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const handleEdit = () => setEditable(!editable);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleIncrement = (e, product) => {
+    e.stopPropagation();
+    dispatch(addToCart(product));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you can handle the save logic
-    setEditable(false);
+  const handleDecrement = (e, product) => {
+    e.stopPropagation();
+    dispatch(decrementQuantity(product));
+  };
+
+  const toggleWishlist = (e, product) => {
+    e.stopPropagation();
+    const isInWishlist = wishlistItems.some((item) => item._id === product._id);
+    if (isInWishlist) dispatch(removeFromWishlist(product._id));
+    else dispatch(addToWishlist(product));
+  };
+
+  const renderProductCard = (product) => {
+    const cartItem = cartItems.find((item) => item._id === product._id);
+    const isInWishlist = wishlistItems.some((item) => item._id === product._id);
+    const discount = product.mrp
+      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+      : 0;
+
+    return (
+      <div
+        key={product._id}
+        className="border rounded-xl shadow-md bg-white hover:shadow-xl transition cursor-pointer overflow-hidden"
+        onClick={() => navigate(`/product/${product._id}`)}
+      >
+        <div className="relative w-full h-48">
+          <img
+            src={product.images[0]}
+            alt={product.name}
+            className="w-full h-full object-cover"
+          />
+          {discount > 0 && (
+            <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
+              {discount}% OFF
+            </span>
+          )}
+          <div className="absolute top-2 right-2">
+            <Heart
+              size={24}
+              className={`cursor-pointer ${
+                isInWishlist ? "text-red-500" : "text-gray-400"
+              } hover:text-red-500`}
+              fill={isInWishlist ? "currentColor" : "none"}
+              onClick={(e) => toggleWishlist(e, product)}
+            />
+          </div>
+        </div>
+        <div className="p-4">
+          <h2 className="text-sm font-semibold truncate">{product.name}</h2>
+          <p className="text-gray-500 text-xs truncate">
+            {product.description}
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            {product.mrp && (
+              <span className="text-gray-400 line-through text-sm">
+                ₹{product.mrp}
+              </span>
+            )}
+            <span className="text-violet-600 font-semibold">
+              ₹{product.price}
+            </span>
+          </div>
+          <div className="flex items-center gap-1 mt-2">
+            {[...Array(5)].map((_, i) => (
+              <span key={i} className="text-yellow-400">
+                {i < product.ratings?.average ? "⭐" : "☆"}
+              </span>
+            ))}
+          </div>
+          <div className="mt-4">
+            {cartItem ? (
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  onClick={(e) => handleDecrement(e, product)}
+                  className="bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600"
+                >
+                  <Minus size={20} />
+                </button>
+                <span className="text-sm font-semibold">
+                  {cartItem.quantity}
+                </span>
+                <button
+                  onClick={(e) => handleIncrement(e, product)}
+                  className="bg-violet-600 text-white px-3 py-1 rounded-full hover:bg-violet-700"
+                >
+                  <Plus size={20} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={(e) => handleIncrement(e, product)}
+                className="bg-violet-600 text-white px-4 py-2 rounded-full hover:bg-violet-700 transition w-full mt-2"
+              >
+                Add to Cart
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-8">
+    <div className="max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-8">
       <h2 className="text-3xl font-bold text-violet-700 mb-6">
         User Dashboard
       </h2>
 
+      {/* Wishlist Section */}
+      <div className="mb-10">
+        <h3 className="text-2xl font-bold text-violet-700 mb-4">
+          Wishlist ({wishlistItems.length})
+        </h3>
+        {wishlistItems.length === 0 ? (
+          <p className="text-gray-500">You have no items in your wishlist.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {wishlistItems.map((product) => renderProductCard(product))}
+          </div>
+        )}
+      </div>
+
+      {/* Profile Section */}
       <div className="flex items-center gap-4 mb-6">
-        {/* ✅ Render image only if profileImageUrl is not empty */}
         {formData.profileImageUrl ? (
           <img
             src={formData.profileImageUrl}
@@ -86,147 +203,34 @@ const UserDashboard = () => {
         </div>
       </div>
 
-      {/* Information Grid */}
+      {/* Info Grid */}
       <div className="grid grid-cols-2 gap-4">
-        {/* Name */}
-        <div className="bg-violet-100 p-4 rounded-lg flex items-center gap-4">
-          <User className="text-violet-700" />
-          <div>
-            <p className="text-gray-600">Name</p>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              disabled={!editable}
-              className="w-full bg-transparent border-none focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Email */}
-        <div className="bg-violet-100 p-4 rounded-lg flex items-center gap-4">
-          <Mail className="text-violet-700" />
-          <div className="flex-1 min-w-0">
-            <p className="text-gray-600">Email</p>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              disabled={!editable}
-              className="w-full bg-transparent border-none focus:outline-none truncate"
-            />
-          </div>
-        </div>
-
-        {/* Phone */}
-        <div className="bg-violet-100 p-4 rounded-lg flex items-center gap-4">
-          <Phone className="text-violet-700" />
-          <div>
-            <p className="text-gray-600">Phone</p>
-            <input
-              type="tel"
-              name="mobileNumber"
-              value={formData.mobileNumber}
-              onChange={handleChange}
-              disabled={!editable}
-              className="w-full bg-transparent border-none focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Date of Birth */}
-        <div className="bg-violet-100 p-4 rounded-lg flex items-center gap-4">
-          <Calendar className="text-violet-700" />
-          <div>
-            <p className="text-gray-600">Date of Birth</p>
-            <input
-              type="date"
-              name="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={handleChange}
-              disabled={!editable}
-              className="w-full bg-transparent border-none focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Gender */}
-        <div className="bg-violet-100 p-4 rounded-lg flex items-center gap-4">
-          <UserCheck className="text-violet-700" />
-          <div>
-            <p className="text-gray-600">Gender</p>
-            <input
-              type="text"
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              disabled={!editable}
-              className="w-full bg-transparent border-none focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Role */}
-        <div className="bg-violet-100 p-4 rounded-lg flex items-center gap-4">
-          <ShieldCheck className="text-violet-700" />
-          <div>
-            <p className="text-gray-600">Role</p>
-            <input
-              type="text"
-              name="user_role"
-              value={formData.user_role}
-              onChange={handleChange}
-              disabled={!editable}
-              className="w-full bg-transparent border-none focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Account Status */}
-        <div className="bg-violet-100 p-4 rounded-lg flex items-center gap-4">
-          <BadgeCheck className="text-violet-700" />
-          <div>
-            <p className="text-gray-600">Account Status</p>
-            <input
-              type="text"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              disabled={!editable}
-              className="w-full bg-transparent border-none focus:outline-none"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="flex justify-end mt-6 gap-4">
-        {editable ? (
-          <>
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              className="bg-violet-600 text-white px-4 py-2 rounded-md hover:bg-violet-700 transition"
-            >
-              Save Changes
-            </button>
-            <button
-              onClick={() => setEditable(false)}
-              className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition"
-            >
-              Cancel
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={handleEdit}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+        {[
+          { label: "Name", icon: <User />, name: "name" },
+          { label: "Email", icon: <Mail />, name: "email" },
+          { label: "Phone", icon: <Phone />, name: "mobileNumber" },
+          {
+            label: "Date of Birth",
+            icon: <Calendar />,
+            name: "dateOfBirth",
+          },
+          { label: "Gender", icon: <UserCheck />, name: "gender" },
+          { label: "Role", icon: <ShieldCheck />, name: "user_role" },
+          { label: "Account Status", icon: <BadgeCheck />, name: "status" },
+        ].map(({ label, icon, name }) => (
+          <div
+            key={name}
+            className="bg-violet-100 p-4 rounded-lg flex items-center gap-4"
           >
-            Edit Information
-          </button>
-        )}
+            <div className="text-violet-700">{icon}</div>
+            <div className="flex-1">
+              <p className="text-gray-600">{label}</p>
+              <p className="text-black font-medium">
+                {formData[name] || "N/A"}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

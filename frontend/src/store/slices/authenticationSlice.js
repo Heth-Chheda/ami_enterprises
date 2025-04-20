@@ -148,7 +148,7 @@ const authenticationSlice = createSlice({
     },
 
     updateUserSuccess(state, action) {
-      // console.log("Updated user:", action.payload.user);
+      console.log("Updated user:", action.payload.user);
       state.loading = false;
       state.message = action.payload.message;
     },
@@ -444,6 +444,38 @@ export const updateUserByEmail = (email, data) => async (dispatch) => {
           "Failed to update user. Please try again."
       )
     );
+  }
+};
+export const updateUserProfile = (formData) => async (dispatch) => {
+  try {
+    dispatch(authenticationSlice.actions.updateUserRequest());
+
+    const token = Cookies.getItem("token");
+
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    };
+
+    const response = await axios.put(
+      "http://localhost:4000/api/v1/authentication/updateUser",
+      formData,
+      config
+    );
+
+    dispatch(authenticationSlice.actions.updateUserSuccess(response.data));
+    // Update local storage if user data returned
+    localStorage.setItem("user", JSON.stringify(response.data.user));
+  } catch (error) {
+    dispatch(
+      authenticationSlice.actions.updateUserFailed(
+        error.response?.data?.message || "Update failed"
+      )
+    );
+    throw error;
   }
 };
 

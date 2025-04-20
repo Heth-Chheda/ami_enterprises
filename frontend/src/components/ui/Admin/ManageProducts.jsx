@@ -2,6 +2,32 @@ import { getAllProducts } from "@/store/slices/productSlice";
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+
+const COLORS = [
+  "#8884d8",
+  "#82ca9d",
+  "#ffc658",
+  "#ff7f50",
+  "#00c49f",
+  "#ff6f91",
+  "#6a5acd",
+  "#ffa07a",
+  "#8dd1e1",
+  "#a4de6c",
+];
 
 const ManageProducts = () => {
   const dispatch = useDispatch();
@@ -16,6 +42,19 @@ const ManageProducts = () => {
   useEffect(() => {
     dispatch(getAllProducts());
   }, [dispatch]);
+
+  // Chart data for products per category
+  const categoryCounts = {};
+  products?.forEach((product) => {
+    product.categories.forEach((category) => {
+      categoryCounts[category.name] = (categoryCounts[category.name] || 0) + 1;
+    });
+  });
+
+  const categoryData = Object.entries(categoryCounts).map(([name, count]) => ({
+    name,
+    count,
+  }));
 
   if (status === "loading") {
     return (
@@ -55,12 +94,10 @@ const ManageProducts = () => {
                 key={product._id}
                 className="hover:bg-violet-50 transition duration-200 border-b"
               >
-                {/* Product Name */}
                 <td className="p-3 text-sm sm:text-base whitespace-nowrap">
                   {product.name}
                 </td>
 
-                {/* Display Multiple Categories */}
                 <td className="p-3 text-sm sm:text-base whitespace-nowrap">
                   <div className="flex flex-wrap gap-1">
                     {product.categories.map((category) => (
@@ -74,7 +111,6 @@ const ManageProducts = () => {
                   </div>
                 </td>
 
-                {/* Display Multiple Variants */}
                 <td className="p-3 text-sm sm:text-base">
                   {product.variants.map((variant, index) => (
                     <div
@@ -99,23 +135,19 @@ const ManageProducts = () => {
                   ))}
                 </td>
 
-                {/* Price */}
                 <td className="p-3 text-sm sm:text-base whitespace-nowrap">
                   ₹{product.price.toFixed(2)}
                 </td>
 
-                {/* Stock */}
                 <td className="p-3 text-sm sm:text-base whitespace-nowrap">
                   {product.stockQuantity}
                 </td>
 
-                {/* Actions */}
                 <td className="p-3 whitespace-nowrap">
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
                         handleEdit(product._id);
-                        console.log(`Edit ${product._id}`);
                       }}
                       className="bg-violet-500 text-white px-3 py-1 rounded-lg hover:bg-violet-600 transition duration-200 text-xs sm:text-sm"
                     >
@@ -133,6 +165,53 @@ const ManageProducts = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Charts Section */}
+      <div className="mt-10">
+        <h2 className="text-xl font-semibold mb-4 text-center">
+          Product Distribution by Category
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Bar Chart */}
+          <div className="bg-white rounded-xl shadow-lg p-4">
+            <h3 className="text-lg font-medium mb-3">Bar Chart</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={categoryData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Pie Chart */}
+          <div className="bg-white rounded-xl shadow-lg p-4">
+            <h3 className="text-lg font-medium mb-3">Pie Chart</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={categoryData}
+                  dataKey="count"
+                  nameKey="name"
+                  outerRadius={100}
+                  label
+                >
+                  {categoryData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Legend />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
     </div>
   );

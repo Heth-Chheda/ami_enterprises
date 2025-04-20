@@ -3,28 +3,19 @@ import { catchAsyncErrorsMiddleware } from "../middlewares/catchAsyncErrorsMiddl
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import Order from "../models/orderModel.js";
 
-export const getOrdersByUserId = catchAsyncErrorsMiddleware(
+export const getUserOrders = catchAsyncErrorsMiddleware(
   async (req, res, next) => {
-    const { userId } = req.params;
+    const userId = req.user._id;
 
-    // Convert userId to ObjectId
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return next(new ErrorHandler("Invalid user ID", 400));
-    }
-
-    const orders = await Order.find({
-      user: new mongoose.Types.ObjectId(userId),
-    }) // ✅ Convert to ObjectId
+    const orders = await Order.find({ user: userId })
       .populate({
         path: "orderItems.product",
-        select: "name price imageUrl",
+        select: "name price images",
       })
       .sort({ createdAt: -1 });
 
-      console.log("Orders Found:", orders);
-
     if (!orders || orders.length === 0) {
-      return next(new ErrorHandler("No orders found for this user", 404));
+      return next(new ErrorHandler("No orders found for this user", 400));
     }
 
     res.status(200).json({

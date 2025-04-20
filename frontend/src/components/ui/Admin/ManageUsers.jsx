@@ -2,16 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteUser, getAllUsers } from "@/store/slices/authenticationSlice.js";
 import {
-  BarChart,
-  Bar,
+  ScatterChart,
+  Scatter,
   XAxis,
   YAxis,
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
-  ScatterChart,
-  Scatter,
-  Customized,
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { timeFormat } from "d3-time-format";
@@ -24,21 +21,30 @@ const ManageUsers = () => {
   );
 
   const formatTime = timeFormat("%b %d, %I:%M %p");
+
   const [filters, setFilters] = useState({
     name: "",
     role: "",
     status: "",
   });
 
-  const handleEdit = (email) => {
-    navigate(`/dashboard/editUser/${email}`);
-  };
-
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
 
-  // Filter users based on state
+  const handleEdit = (email) => {
+    navigate(`/dashboard/editUser/${email}`);
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDelete = (id) => {
+    dispatch(deleteUser(id));
+  };
+
   const filteredUsers = users.filter((user) => {
     return (
       (filters.name === "" ||
@@ -48,17 +54,11 @@ const ManageUsers = () => {
     );
   });
 
-  // Handle input changes for filters
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Handle delete
-  const handleDelete = (id) => {
-    dispatch(deleteUser(id));
-    // console.log("Delete users.");
-  };
+  const totalUsers = users.length;
+  const totalAdmins = users.filter((user) => user.user_role === "admin").length;
+  const totalCustomers = users.filter(
+    (user) => user.user_role === "customer"
+  ).length;
 
   const userActivityData = users.map((user, index) => ({
     x: new Date(user.createdAt).getTime(),
@@ -103,9 +103,30 @@ const ManageUsers = () => {
     }
     return null;
   };
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Manage Users</h1>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-md p-6 text-center">
+          <h3 className="text-lg font-semibold text-gray-600 mb-2">
+            Total Users
+          </h3>
+          <p className="text-3xl font-bold text-violet-600">{totalUsers}</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-md p-6 text-center">
+          <h3 className="text-lg font-semibold text-gray-600 mb-2">Admins</h3>
+          <p className="text-3xl font-bold text-blue-500">{totalAdmins}</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-md p-6 text-center">
+          <h3 className="text-lg font-semibold text-gray-600 mb-2">
+            Customers
+          </h3>
+          <p className="text-3xl font-bold text-green-500">{totalCustomers}</p>
+        </div>
+      </div>
 
       {/* Filter Section */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -145,7 +166,7 @@ const ManageUsers = () => {
       {/* Error State */}
       {error && <p className="text-red-500">Error: {error}</p>}
 
-      {/* User List */}
+      {/* User Table */}
       {!loading && !error && filteredUsers.length > 0 && (
         <div className="overflow-x-auto rounded-lg shadow-lg">
           <table className="min-w-full bg-white border border-gray-200">
@@ -165,9 +186,9 @@ const ManageUsers = () => {
                 <tr key={user._id} className="hover:bg-gray-50 border-b">
                   <td className="p-4">
                     <img
-                      src={user.profileImageUrl || "/default-avatar.png"} // Use default if no profile image
+                      src={user.profileImageUrl || "/default-avatar.png"}
                       alt="Profile"
-                      className="w-8 h-8 rounded-full object-cover" // Adjust size and style
+                      className="w-8 h-8 rounded-full object-cover"
                     />
                   </td>
                   <td className="p-4">{user.name}</td>
@@ -202,28 +223,25 @@ const ManageUsers = () => {
         </div>
       )}
 
-      {/* No Users State */}
+      {/* No Users Found */}
       {!loading && !error && filteredUsers.length === 0 && (
         <p className="text-gray-500 mt-6 text-center">No users found.</p>
       )}
 
-      {/* User Activity Chart */}
+      {/* Chart */}
       <div className="mt-10">
         <h2 className="text-xl font-semibold mb-4">User Creation Timeline</h2>
         <ResponsiveContainer width="100%" height={300}>
           <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
             <CartesianGrid />
-            {/* X-Axis for Date and Time */}
             <XAxis
               type="number"
               dataKey="x"
               domain={["dataMin", "dataMax"]}
               tickFormatter={(time) => formatTime(new Date(time))}
             />
-            {/* Y-Axis for User Index */}
             <YAxis type="number" dataKey="y" name="User" />
             <Tooltip content={<CustomTooltip />} />
-            {/* Render Profile Image */}
             <Scatter
               name="Users"
               data={userActivityData}

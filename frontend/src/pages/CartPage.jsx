@@ -31,40 +31,41 @@ const CartPage = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      const userId = localStorage.getItem("user_id");
-      if (userId) {
-        const savedCart = localStorage.getItem(`cart_${userId}`);
-        if (savedCart) {
-          try {
-            const cartItemsFromStorage = JSON.parse(savedCart);
-            cartItemsFromStorage.forEach((item) => {
-              if (
-                item.price &&
-                item.quantity &&
-                !cartItems.some((cartItem) => cartItem.id === item.id)
-              ) {
-                dispatch(addToCart(item));
-              }
-            });
-          } catch (error) {
-            console.error("Error loading cart from storage:", error);
-          }
-        }
-      }
-    }
-  }, [isAuthenticated, dispatch, cartItems]);
+  const subtotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  const shippingThreshold = 20; // Free shipping at ₹20
+  const shippingCost = subtotal >= shippingThreshold ? 0 : 4;
+  const shippingDiscount = subtotal >= shippingThreshold ? -2 : 0;
+  const balance = subtotal + shippingCost + shippingDiscount;
+
+  const progress = Math.min((subtotal / shippingThreshold) * 100, 100);
 
   if (!isAuthenticated) return null;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 min-h-[100vh]">
-      <h2 className="text-4xl font-extrabold text-violet-700 mb-8 flex items-center gap-2">
-        <FaShoppingCart className="text-violet-500" />
-        Shopping Cart
-      </h2>
+    <div className="max-w-6xl mx-auto p-8 min-h-screen">
+      {/* Cart Header */}
+      <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Your Cart</h2>
 
+      {subtotal < shippingThreshold && (
+        <div className="border border-gray-300 p-4 rounded-lg mb-6">
+          <p className="text-sm text-gray-600">
+            You're ₹{(shippingThreshold - subtotal).toFixed(2)} away from{" "}
+            <span className="font-medium">FREE SHIPPING!</span>
+          </p>
+          <div className="w-full bg-gray-200 h-2 rounded-full mt-2">
+            <div
+              className="bg-red-500 h-2 rounded-full"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
+
+      {/* Cart Items */}
       {cartItems.length === 0 ? (
         <p className="text-gray-400 text-lg animate-pulse">
           Your cart is empty!
@@ -74,51 +75,43 @@ const CartPage = () => {
           {cartItems.map((item) => (
             <div
               key={item._id}
-              className="flex items-center justify-between bg-gradient-to-r from-white to-gray-100 
-              backdrop-blur-lg rounded-xl shadow-md p-5 border hover:shadow-2xl transition-all 
-              duration-300 transform hover:-translate-y-1"
+              className="flex items-center justify-between bg-white border border-gray-200 rounded-xl shadow-md p-5 hover:shadow-lg transition duration-300"
             >
+              {/* Product Image & Info */}
               <div className="flex items-center space-x-4">
                 <img
                   src={item.images[0]}
                   alt={item.name}
-                  className="w-20 h-20 object-cover rounded-lg border border-gray-300 transition-all 
-                  duration-300 hover:scale-105"
+                  className="w-24 h-24 object-cover rounded-lg border"
                 />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {item.name}
-                  </h3>
+                  <h3 className="text-lg font-semibold">{item.name}</h3>
                   <p className="text-gray-500 text-sm mt-1">
                     ₹{item.price ? item.price.toFixed(2) : "0.00"}
                   </p>
                 </div>
               </div>
 
-              {/* ✅ Quantity and Remove Buttons */}
+              {/* Quantity Controls */}
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => handleDecrement(item)}
-                  className="group border border-gray-300 p-2 rounded-full 
-                  hover:bg-red-100 hover:border-red-300 transition-all duration-200"
+                  className="p-2 border rounded-full hover:bg-gray-100 transition"
                 >
-                  <FaMinus className="text-gray-600 group-hover:text-red-500 transition-all duration-200" />
+                  <FaMinus className="text-gray-500" />
                 </button>
-                <span className="text-lg font-semibold text-gray-700">
-                  {item.quantity}
-                </span>
+                <span className="text-lg font-semibold">{item.quantity}</span>
                 <button
                   onClick={() => handleIncrement(item)}
-                  className="group border border-gray-300 p-2 rounded-full 
-                  hover:bg-green-100 hover:border-green-300 transition-all duration-200"
+                  className="p-2 border rounded-full hover:bg-gray-100 transition"
                 >
-                  <FaPlus className="text-gray-600 group-hover:text-green-500 transition-all duration-200" />
+                  <FaPlus className="text-gray-500" />
                 </button>
                 <button
                   onClick={() => handleRemove(item.id)}
-                  className="group text-red-500 hover:text-red-700 transition-all duration-200"
+                  className="p-2 hover:text-red-500 transition"
                 >
-                  <FaTrash className="group-hover:scale-110 transition-all duration-200" />
+                  <FaTrash />
                 </button>
               </div>
             </div>
@@ -126,40 +119,49 @@ const CartPage = () => {
         </div>
       )}
 
-      {/* ✅ Cart Summary */}
+      {/* Cart Summary */}
       {cartItems.length > 0 && (
-        <div
-          className="mt-8 p-6 bg-gradient-to-r from-white to-gray-100 
-          backdrop-blur-lg rounded-xl shadow-md border"
-        >
-          <div className="flex justify-between items-center text-lg font-medium">
-            <span className="text-gray-600">Total:</span>
-            <span className="text-gray-800 font-bold">
-              ₹
-              {cartItems
-                .reduce((total, item) => total + item.price * item.quantity, 0)
-                .toFixed(2)}
-            </span>
+        <div className="mt-10 bg-gray-50 p-6 rounded-lg shadow-md border">
+          <h3 className="text-xl font-semibold mb-4">Summary</h3>
+          <div className="space-y-2 text-gray-700">
+            <div className="flex justify-between">
+              <span>Subtotal ({cartItems.length} Items)</span>
+              <span>₹{subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Shipping Discount</span>
+              <span className={shippingDiscount < 0 ? "text-green-600" : ""}>
+                ₹{shippingDiscount.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Shipping & Handling</span>
+              <span>₹{shippingCost.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax (Calculated at checkout)</span>
+              <span>₹0.00</span>
+            </div>
+          </div>
+          <hr className="my-4" />
+          <div className="flex justify-between font-semibold text-gray-900">
+            <span>Balance</span>
+            <span>₹{balance.toFixed(2)}</span>
           </div>
 
-          {/* ✅ Proceed to Checkout Button */}
+          {/* Checkout Button */}
           <button
-            className="mt-6 w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold 
-              py-3 rounded-lg shadow-md active:scale-95 transition-transform duration-300 
-              flex items-center justify-center gap-2 cursor-pointer"
+            className="mt-6 w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition font-semibold"
+            onClick={() => navigate("/checkout")}
           >
-            <FaShoppingCart />
-            Proceed to Checkout
+            Checkout
           </button>
 
-          {/* ✅ Clear Cart Button */}
+          {/* Clear Cart Button */}
           <button
             onClick={handleClearCart}
-            className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white font-semibold 
-              py-3 rounded-lg shadow-md active:scale-95 transition-transform duration-300 
-              flex items-center justify-center gap-2 cursor-pointer"
+            className="mt-4 w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 transition font-semibold"
           >
-            <FaTrash />
             Clear Cart
           </button>
         </div>

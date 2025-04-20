@@ -1,12 +1,12 @@
 import express from "express";
-import { seedData } from "../data/seed.js";
+import { createOrder } from "../data/seed.js";
+import { isAuthenticatedUser } from "../middlewares/authenticationMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", isAuthenticatedUser, async (req, res, next) => {
   try {
-    await seedData();
-    res.status(200).json({ success: true, message: "Data seeded successfully" });
+    await createOrder(req, res, next); // Pass req, res, next here
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
