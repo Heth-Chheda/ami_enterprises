@@ -10,6 +10,7 @@ import productsRoutes from "./routes/productsRoute.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import wishlistRoute from "./routes/wishlistRoutes.js";
 import seedRoute from "./routes/seedRoute.js";
+import paymentRoutes from "./routes/paymentRoutes.js"
 
 export const app = express();
 
@@ -17,7 +18,6 @@ export const app = express();
 config({
   path: "./config/config.env",
 });
-
 // -------------------MiddleWares-------------------
 app.use(cookieParser());
 app.use(express.json());
@@ -40,6 +40,9 @@ app.use("/api/v1/user/orders", orderRoutes);
 
 //--------------------------- WishList ----------------------------------
 app.use("/api/user/wishlist", wishlistRoute);
+
+//--------------------------- Payment -----------------------------------
+app.use("/api/payment", paymentRoutes);
 
 //----------------- Seed Routes for adding data to collections------------
 app.use("/api/v1/seed", seedRoute);
